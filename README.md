@@ -26,6 +26,28 @@ Missing required variables fail at module load (`src/config/env.ts`) rather than
 on the first request, so a misconfigured deployment breaks the build instead of
 a user's session.
 
+## Deploying to Vercel
+
+1. Import the repository, set **Root Directory** to `web_nusantara`.
+2. Add the environment variables **before the first deploy**:
+
+   | Variable | Value |
+   | --- | --- |
+   | `NEXT_PUBLIC_API_BASE_URL` | e.g. `https://api.nusantara.example/api/v1` |
+   | `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | optional |
+
+3. Deploy.
+
+`NEXT_PUBLIC_*` values are **inlined into the bundle at build time**, not read at
+runtime. Adding or changing one therefore requires a **redeploy** — restarting
+the deployment is not enough.
+
+The build no longer fails when the API URL is missing: it succeeds, and the
+sign-in screen says the app is not connected to a server. An earlier version
+validated at module load, so a missing variable threw while Next was merely
+*evaluating* the module during prerender — which took down `/_not-found`, a page
+that never touches the API, and failed the whole build.
+
 ## Layout
 
 ```

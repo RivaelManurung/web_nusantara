@@ -4,7 +4,7 @@ import axios, {
   type InternalAxiosRequestConfig,
 } from "axios";
 
-import { env } from "@/config/env";
+import { getApiBaseUrl } from "@/config/env";
 import { tokenStorage } from "@/lib/auth/token-storage";
 import type { Envelope, Paginated } from "@/types/api";
 import type { TokenPair } from "@/types/auth";
@@ -20,8 +20,10 @@ export function setSessionExpiredHandler(handler: SessionExpiredHandler): void {
   onSessionExpired = handler;
 }
 
+// No baseURL here: resolving it at module scope would throw during prerender
+// for every page, including ones that never call the API. It is attached per
+// request below, where a missing setting is a real failure worth reporting.
 const http: AxiosInstance = axios.create({
-  baseURL: env.apiBaseUrl,
   headers: { "Content-Type": "application/json" },
   timeout: 30_000,
 });
@@ -43,7 +45,7 @@ async function refreshAccessToken(): Promise<string | null> {
     // A bare axios call: going through `http` would recurse into this
     // interceptor.
     const response = await axios.post<Envelope<TokenPair>>(
-      `${env.apiBaseUrl}/auth/refresh`,
+      `${getApiBaseUrl()}/auth/refresh`,
       { refresh_token: refreshToken },
       { headers: { "Content-Type": "application/json" }, timeout: 15_000 },
     );
@@ -71,6 +73,8 @@ async function ensureFreshToken(): Promise<string | null> {
 }
 
 http.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
+  config.baseURL = getApiBaseUrl();
+
   // The refresh endpoint authenticates with its body, not a bearer token.
   if (config.url?.includes("/auth/refresh")) return config;
 

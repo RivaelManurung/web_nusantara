@@ -3,6 +3,8 @@ import Image from "next/image";
 import { Suspense } from "react";
 
 import { LoginForm } from "@/features/auth/components/login-form";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { isApiConfigured } from "@/config/env";
 import {
   Card,
   CardContent,
@@ -29,7 +31,21 @@ export default function LoginPage() {
         <CardDescription>Panel admin Nusantara Oleh-Oleh.</CardDescription>
       </CardHeader>
 
-      <CardContent>
+      <CardContent className="space-y-4">
+        {/*
+          Without the API URL the build still succeeds, so the first sign that
+          anything is wrong would otherwise be a failed login. Say it up front.
+        */}
+        {isApiConfigured() ? null : (
+          <Alert variant="destructive">
+            <AlertTitle>Aplikasi belum terhubung ke server</AlertTitle>
+            <AlertDescription>
+              NEXT_PUBLIC_API_BASE_URL belum diatur. Tambahkan di Environment
+              Variables lalu deploy ulang — nilainya ditanam saat build.
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* useSearchParams needs a Suspense boundary to keep the page static. */}
         <Suspense fallback={<Skeleton className="h-64 w-full" />}>
           <LoginForm />
