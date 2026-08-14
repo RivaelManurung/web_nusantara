@@ -3,6 +3,7 @@
 import { Search, UsersRound, Warehouse, X } from "lucide-react";
 import { useMemo, useState } from "react";
 
+import { NumberField } from "@/components/shared/number-field";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -13,6 +14,15 @@ import { cn } from "@/lib/utils";
 
 import type { Cashier } from "@/features/cashier/types";
 import type { ProductPick, ShopProductInput } from "../types";
+
+/**
+ * Grouped digits without a currency symbol, matching what the price field
+ * shows once typed -- the placeholder is a preview of the value, so it has to
+ * be spelled the same way. The "Rp" is already drawn inside the field.
+ */
+const groupedNumber = new Intl.NumberFormat("id-ID", {
+  maximumFractionDigits: 0,
+});
 
 interface Props {
   cashiers: Cashier[];
@@ -263,7 +273,10 @@ function ProductRow({
         {checked && selection ? (
           <>
             {/* The heading above names these columns visually; the sr-only
-                label names them per product for assistive tech. */}
+                label names them per product for assistive tech. NumberField
+                renders its own label, so it is left unset here and the label
+                stays outside: the row heading must not repeat per product, and
+                the grid column stays a single element either way. */}
             <div className="pl-8 sm:pl-0">
               <Label
                 htmlFor={`shop-stock-${product.id}`}
@@ -271,18 +284,12 @@ function ProductRow({
               >
                 Stok {product.name}
               </Label>
-              <Input
+              <NumberField
                 id={`shop-stock-${product.id}`}
-                type="number"
-                min={0}
-                inputMode="numeric"
                 value={selection.stock}
-                onChange={(event) =>
-                  onChange(product.id, {
-                    stock: Math.max(0, Number(event.target.value) || 0),
-                  })
+                onChange={(next) =>
+                  onChange(product.id, { stock: next ?? 0 })
                 }
-                className="tabular-nums"
               />
             </div>
 
@@ -294,26 +301,18 @@ function ProductRow({
                 >
                   Harga toko untuk {product.name}
                 </Label>
-                <Input
+                <NumberField
                   id={`shop-price-${product.id}`}
-                  type="number"
-                  min={0}
-                  inputMode="numeric"
+                  prefix="Rp"
                   // The catalogue price as the placeholder makes "leave empty
                   // to use the catalogue price" a number rather than a promise.
                   placeholder={
-                    product.price != null ? String(product.price) : "katalog"
+                    product.price != null
+                      ? groupedNumber.format(product.price)
+                      : "katalog"
                   }
-                  value={selection.price ?? ""}
-                  onChange={(event) =>
-                    onChange(product.id, {
-                      price:
-                        event.target.value === ""
-                          ? null
-                          : Math.max(0, Number(event.target.value) || 0),
-                    })
-                  }
-                  className="tabular-nums"
+                  value={selection.price}
+                  onChange={(next) => onChange(product.id, { price: next })}
                 />
               </div>
 

@@ -118,7 +118,7 @@ export function ProductGalleryField({
                   alt=""
                   fill
                   sizes="80px"
-                  className="object-cover"
+                  className="object-contain p-1"
                   unoptimized
                 />
               </div>

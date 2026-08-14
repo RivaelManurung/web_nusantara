@@ -7,7 +7,9 @@ import { Controller, useForm, useWatch } from "react-hook-form";
 import { useInvalidSubmit } from "@/hooks/use-invalid-submit";
 import { z } from "zod";
 
+import { DateField } from "@/components/shared/date-field";
 import { FormActions } from "@/components/shared/form-actions";
+import { NumberField } from "@/components/shared/number-field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -19,7 +21,6 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { ROUTES } from "@/config/routes";
-import { formatCurrency } from "@/lib/format";
 
 import { useCreateVoucher, useUpdateVoucher } from "../queries";
 import type { Voucher, VoucherDiscountType } from "../types";
@@ -103,7 +104,6 @@ export function VoucherForm({ editing }: Props) {
   // `useWatch` rather than `watch`: it subscribes to one field instead of
   // returning a fresh function on every render.
   const discountType = useWatch({ control, name: "discountType" });
-  const minimumSpend = useWatch({ control, name: "minimumSpend" });
 
   async function onSubmit(values: FormValues) {
     const input = {
@@ -185,58 +185,37 @@ export function VoucherForm({ editing }: Props) {
       </div>
 
       {discountType === "percent" ? (
-        <div className="space-y-2">
-          <Label htmlFor="voucher-discount-percent">
-            Persentase diskon (%)
-          </Label>
-          <Input
-            id="voucher-discount-percent"
-            type="number"
-            min={0}
-            max={100}
-            placeholder="10"
-            aria-invalid={Boolean(errors.discountPercent)}
-            aria-describedby={
-              errors.discountPercent
-                ? "voucher-discount-percent-error"
-                : undefined
-            }
-            {...register("discountPercent", { valueAsNumber: true })}
-          />
-          {errors.discountPercent ? (
-            <p
-              id="voucher-discount-percent-error"
-              className="text-destructive text-sm"
-            >
-              {errors.discountPercent.message}
-            </p>
-          ) : null}
-        </div>
+        <Controller
+          control={control}
+          name="discountPercent"
+          render={({ field }) => (
+            <NumberField
+              id="voucher-discount-percent"
+              label="Persentase diskon"
+              suffix="%"
+              placeholder="10"
+              value={field.value}
+              onChange={(next) => field.onChange(toNumber(next))}
+              error={errors.discountPercent?.message}
+            />
+          )}
+        />
       ) : (
-        <div className="space-y-2">
-          <Label htmlFor="voucher-discount-amount">Nominal diskon (Rp)</Label>
-          <Input
-            id="voucher-discount-amount"
-            type="number"
-            min={0}
-            placeholder="25000"
-            aria-invalid={Boolean(errors.discountAmount)}
-            aria-describedby={
-              errors.discountAmount
-                ? "voucher-discount-amount-error"
-                : undefined
-            }
-            {...register("discountAmount", { valueAsNumber: true })}
-          />
-          {errors.discountAmount ? (
-            <p
-              id="voucher-discount-amount-error"
-              className="text-destructive text-sm"
-            >
-              {errors.discountAmount.message}
-            </p>
-          ) : null}
-        </div>
+        <Controller
+          control={control}
+          name="discountAmount"
+          render={({ field }) => (
+            <NumberField
+              id="voucher-discount-amount"
+              label="Nominal diskon"
+              prefix="Rp"
+              placeholder="25.000"
+              value={field.value}
+              onChange={(next) => field.onChange(toNumber(next))}
+              error={errors.discountAmount?.message}
+            />
+          )}
+        />
       )}
 
       <div className="space-y-2">
@@ -262,111 +241,98 @@ export function VoucherForm({ editing }: Props) {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <div className="space-y-2">
-          <Label htmlFor="voucher-minimum-spend">Minimal belanja (Rp)</Label>
-          <Input
-            id="voucher-minimum-spend"
-            type="number"
-            min={0}
-            aria-invalid={Boolean(errors.minimumSpend)}
-            aria-describedby="voucher-minimum-spend-hint"
-            {...register("minimumSpend", { valueAsNumber: true })}
-          />
-          <p
-            id="voucher-minimum-spend-hint"
-            className="text-muted-foreground text-xs"
-          >
-            {errors.minimumSpend
-              ? errors.minimumSpend.message
-              : formatCurrency(minimumSpend)}
-          </p>
-        </div>
+        <Controller
+          control={control}
+          name="minimumSpend"
+          render={({ field }) => (
+            <NumberField
+              id="voucher-minimum-spend"
+              label="Minimal belanja"
+              prefix="Rp"
+              value={field.value}
+              onChange={(next) => field.onChange(toNumber(next))}
+              error={errors.minimumSpend?.message}
+              // No readback line: the field now groups its own thousands and
+              // carries the Rp prefix, so repeating the amount underneath said
+              // the same thing twice.
+            />
+          )}
+        />
 
-        <div className="space-y-2">
-          <Label htmlFor="voucher-point-cost">Biaya poin</Label>
-          <Input
-            id="voucher-point-cost"
-            type="number"
-            min={0}
-            placeholder="1500"
-            aria-invalid={Boolean(errors.pointCost)}
-            aria-describedby={
-              errors.pointCost ? "voucher-point-cost-error" : undefined
-            }
-            {...register("pointCost", { valueAsNumber: true })}
-          />
-          {errors.pointCost ? (
-            <p
-              id="voucher-point-cost-error"
-              className="text-destructive text-sm"
-            >
-              {errors.pointCost.message}
-            </p>
-          ) : null}
-        </div>
+        <Controller
+          control={control}
+          name="pointCost"
+          render={({ field }) => (
+            <NumberField
+              id="voucher-point-cost"
+              label="Biaya poin"
+              placeholder="1.500"
+              value={field.value}
+              onChange={(next) => field.onChange(toNumber(next))}
+              error={errors.pointCost?.message}
+            />
+          )}
+        />
 
-        <div className="space-y-2">
-          <Label htmlFor="voucher-quota">Kuota</Label>
-          <Input
-            id="voucher-quota"
-            type="number"
-            min={1}
-            aria-invalid={Boolean(errors.quota)}
-            aria-describedby={errors.quota ? "voucher-quota-error" : undefined}
-            {...register("quota", { valueAsNumber: true })}
-          />
-          {errors.quota ? (
-            <p id="voucher-quota-error" className="text-destructive text-sm">
-              {errors.quota.message}
-            </p>
-          ) : null}
-        </div>
+        <Controller
+          control={control}
+          name="quota"
+          render={({ field }) => (
+            <NumberField
+              id="voucher-quota"
+              label="Kuota"
+              value={field.value}
+              onChange={(next) => field.onChange(toNumber(next))}
+              error={errors.quota?.message}
+            />
+          )}
+        />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="voucher-start-date">Tanggal mulai</Label>
-          <Input
-            id="voucher-start-date"
-            type="date"
-            aria-invalid={Boolean(errors.startDate)}
-            aria-describedby={
-              errors.startDate ? "voucher-start-date-error" : undefined
-            }
-            {...register("startDate")}
-          />
-          {errors.startDate ? (
-            <p
-              id="voucher-start-date-error"
-              className="text-destructive text-sm"
-            >
-              {errors.startDate.message}
-            </p>
-          ) : null}
-        </div>
+        <Controller
+          control={control}
+          name="startDate"
+          render={({ field }) => (
+            <DateField
+              id="voucher-start-date"
+              label="Tanggal mulai"
+              value={field.value}
+              onChange={field.onChange}
+              error={errors.startDate?.message}
+            />
+          )}
+        />
 
-        <div className="space-y-2">
-          <Label htmlFor="voucher-end-date">Tanggal berakhir</Label>
-          <Input
-            id="voucher-end-date"
-            type="date"
-            aria-invalid={Boolean(errors.endDate)}
-            aria-describedby={
-              errors.endDate ? "voucher-end-date-error" : undefined
-            }
-            {...register("endDate")}
-          />
-          {errors.endDate ? (
-            <p id="voucher-end-date-error" className="text-destructive text-sm">
-              {errors.endDate.message}
-            </p>
-          ) : null}
-        </div>
+        <Controller
+          control={control}
+          name="endDate"
+          render={({ field }) => (
+            <DateField
+              id="voucher-end-date"
+              label="Tanggal berakhir"
+              value={field.value}
+              onChange={field.onChange}
+              error={errors.endDate?.message}
+            />
+          )}
+        />
       </div>
 
       <FormActions cancelHref={ROUTES.vouchers} isPending={isPending} />
     </form>
   );
+}
+
+/**
+ * `NumberField` reports an empty box as null, which the schema does not model.
+ * Zero is the right reading of "nothing typed" for every amount here -- and
+ * where zero is not allowed, the field's own rule says so ("Kuota minimal 1.",
+ * "Persentase diskon harus lebih dari 0."), so the message the user sees is
+ * still the one the schema wrote.
+ */
+function toNumber(value: number | null): number {
+  return value ?? 0;
 }
 
 function emptyValues(): FormValues {
@@ -404,9 +370,9 @@ function toFormValues(voucher: Voucher): FormValues {
 }
 
 /**
- * `<input type="date">` speaks `yyyy-MM-dd` in local time, so the date is built
- * from the local parts; using `toISOString().slice(0, 10)` would shift the day
- * backwards for anyone east of UTC, which is everyone using this panel.
+ * `DateField` speaks `yyyy-MM-dd` in local time, so the date is built from the
+ * local parts; using `toISOString().slice(0, 10)` would shift the day backwards
+ * for anyone east of UTC, which is everyone using this panel.
  */
 function toDateInput(value: string | Date): string {
   const date = value instanceof Date ? value : new Date(value);

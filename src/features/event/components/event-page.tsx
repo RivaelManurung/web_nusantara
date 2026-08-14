@@ -73,6 +73,7 @@ export function EventPage() {
             columns={columns}
             data={data?.items ?? []}
             isLoading={isLoading}
+            rowHref={(event) => `${ROUTES.events}/${event.id}/edit`}
             emptyMessage={
               params.search
                 ? `Tidak ada event yang cocok dengan “${params.search}”.`

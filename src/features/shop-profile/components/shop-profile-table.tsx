@@ -24,7 +24,7 @@ export function useShopProductColumns(): ColumnDef<ShopProduct>[] {
                 alt=""
                 fill
                 sizes="48px"
-                className="object-cover"
+                className="object-contain p-1"
                 unoptimized
               />
             ) : null}

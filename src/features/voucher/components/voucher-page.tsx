@@ -73,6 +73,7 @@ export function VoucherPage() {
             columns={columns}
             data={data?.items ?? []}
             isLoading={isLoading}
+            rowHref={(voucher) => `${ROUTES.vouchers}/${voucher.id}/edit`}
             emptyMessage={
               params.search
                 ? `Tidak ada voucher yang cocok dengan “${params.search}”.`

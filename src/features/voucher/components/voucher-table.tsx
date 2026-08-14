@@ -3,6 +3,8 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
+
+import { cn } from "@/lib/utils";
 import { useMemo } from "react";
 
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -46,7 +48,15 @@ export function useVoucherColumns({
         accessorKey: "code",
         header: "Kode",
         cell: ({ row }) => (
-          <span className="font-medium tracking-wide">{row.original.code}</span>
+          <Link
+            href={editHref(row.original)}
+            className={cn(
+              "font-medium tracking-wide",
+              "hover:text-primary focus-visible:ring-ring rounded-sm transition-colors duration-150 ease-out focus-visible:ring-2 focus-visible:outline-none",
+            )}
+          >
+            {row.original.code}
+          </Link>
         ),
       },
       {

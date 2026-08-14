@@ -4,6 +4,8 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+
+import { cn } from "@/lib/utils";
 import { useMemo } from "react";
 
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -46,7 +48,7 @@ export function useTypeProductColumns({
                 alt=""
                 fill
                 sizes="48px"
-                className="object-cover"
+                className="object-contain p-1"
                 unoptimized
               />
             ) : null}
@@ -57,7 +59,15 @@ export function useTypeProductColumns({
         accessorKey: "name",
         header: "Nama",
         cell: ({ row }) => (
-          <span className="font-medium">{row.original.name}</span>
+          <Link
+            href={editHref(row.original)}
+            className={cn(
+              "font-medium",
+              "hover:text-primary focus-visible:ring-ring rounded-sm transition-colors duration-150 ease-out focus-visible:ring-2 focus-visible:outline-none",
+            )}
+          >
+            {row.original.name}
+          </Link>
         ),
       },
       {

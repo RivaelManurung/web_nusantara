@@ -73,6 +73,10 @@ export function CashierPage() {
             columns={columns}
             data={data?.items ?? []}
             isLoading={isLoading}
+            // The whole row is a shortcut to the same edit page the actions
+            // menu points at, so scanning the list does not require aiming at
+            // the small trailing button.
+            rowHref={(row) => `${ROUTES.cashierManagement}/${row.id}/edit`}
             emptyMessage={
               params.search
                 ? `Tidak ada kasir yang cocok dengan “${params.search}”.`

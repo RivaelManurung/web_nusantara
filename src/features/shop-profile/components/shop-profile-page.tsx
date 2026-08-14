@@ -176,6 +176,10 @@ export function ShopProfilePage() {
             <h2 className="text-lg font-semibold tracking-tight">
               Produk di toko ini
             </h2>
+            {/* No rowHref: this listing is read-only and the app has no
+                detail page for a shop's product. The only per-product screen
+                is the catalogue edit form, which is a different record and
+                not what a row here stands for. */}
             <DataTable
               columns={columns}
               data={products ?? []}

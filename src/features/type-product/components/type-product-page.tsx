@@ -83,6 +83,10 @@ export function TypeProductPage() {
             columns={columns}
             data={data?.items ?? []}
             isLoading={isLoading}
+            // The whole row is a shortcut to the same edit page the actions
+            // menu points at, so scanning the list does not require aiming at
+            // the small trailing button.
+            rowHref={(row) => `${ROUTES.productTypes}/${row.id}/edit`}
             emptyMessage={
               params.search
                 ? `Tidak ada tipe produk yang cocok dengan “${params.search}”.`

@@ -28,7 +28,7 @@ export function ShopProductCard({ product }: Props) {
             fill
             sizes="(min-width: 1280px) 22vw, (min-width: 640px) 45vw, 90vw"
             className={cn(
-              "object-cover",
+              "object-contain p-1",
               // A dimmed card reads as unavailable at a glance, which matters
               // on a cashier screen scanned rather than read.
               !product.isActive && "grayscale",

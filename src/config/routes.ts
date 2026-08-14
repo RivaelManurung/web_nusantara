@@ -26,6 +26,7 @@ export const ROUTES = {
   vouchers: "/vouchers",
   transactionReports: "/transaction-reports",
   financialReports: "/financial-reports",
+  roles: "/roles",
   settings: "/settings",
   shopProfile: "/shop-profile",
 } as const;
@@ -54,6 +55,10 @@ export const ROUTE_ROLES: Partial<Record<string, Role[]>> = {
   [ROUTES.vouchers]: ["superadmin"],
   [ROUTES.transactionReports]: ["superadmin"],
   [ROUTES.financialReports]: ["superadmin"],
+  // Roles and their permissions decide what every other guard here allows, so
+  // the screen that edits them is superadmin-only -- matching the backend,
+  // which requires superadmin on all three permission endpoints.
+  [ROUTES.roles]: ["superadmin"],
   [ROUTES.shopProfile]: ["admin"],
   [ROUTES.unassignedShop]: ["admin"],
 };

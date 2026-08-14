@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
-import { NotBuiltYet } from "@/components/shared/not-built-yet";
+import { ReviewPage } from "@/features/review/components/review-page";
 
 export const metadata: Metadata = { title: "Ulasan Pelanggan" };
 
 export default function Page() {
-  return <NotBuiltYet description="Ulasan dan penilaian dari pembeli." />;
+  return <ReviewPage />;
 }

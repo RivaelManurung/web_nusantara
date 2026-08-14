@@ -9,6 +9,7 @@ import { z } from "zod";
 
 import { FormActions } from "@/components/shared/form-actions";
 import { ImageField } from "@/components/shared/image-field";
+import { NumberField } from "@/components/shared/number-field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -170,24 +171,22 @@ export function ProductForm({ editing }: Props) {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="product-price">Harga (Rp)</Label>
-          <Input
-            id="product-price"
-            type="number"
-            inputMode="numeric"
-            min={0}
-            step={1}
-            aria-invalid={Boolean(errors.price)}
-            aria-describedby={errors.price ? "product-price-error" : undefined}
-            {...register("price", { valueAsNumber: true })}
-          />
-          {errors.price ? (
-            <p id="product-price-error" className="text-destructive text-sm">
-              {errors.price.message}
-            </p>
-          ) : null}
-        </div>
+        <Controller
+          control={control}
+          name="price"
+          render={({ field }) => (
+            <NumberField
+              id="product-price"
+              label="Harga"
+              prefix="Rp"
+              // The field is required, so an emptied input has to reach the
+              // resolver as "no number" rather than silently becoming zero.
+              value={field.value ?? null}
+              onChange={field.onChange}
+              error={errors.price?.message}
+            />
+          )}
+        />
 
         <div className="space-y-2">
           <Label htmlFor="product-unit">Unit</Label>

@@ -47,7 +47,7 @@ export function ProductGalleryDialog({ product, onOpenChange }: Props) {
                   alt=""
                   fill
                   sizes="(min-width: 640px) 200px, 45vw"
-                  className="object-cover"
+                  className="object-contain p-1"
                   unoptimized
                 />
               </li>

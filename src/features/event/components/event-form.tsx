@@ -12,6 +12,7 @@ import { z } from "zod";
 
 import { FormActions } from "@/components/shared/form-actions";
 import { ImageField } from "@/components/shared/image-field";
+import { NumberField } from "@/components/shared/number-field";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,6 +27,7 @@ import { ROUTES } from "@/config/routes";
 
 import { useCreateEvent, useUpdateEvent } from "../queries";
 import type { AppEvent, EventProduct, EventType } from "../types";
+import { DateTimeField } from "./date-time-field";
 import { ProductSelectorDialog } from "./product-selector-dialog";
 
 const EVENT_TYPES: { label: string; value: EventType }[] = [
@@ -273,44 +275,33 @@ export function EventForm({ editing }: Props) {
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="event-start-date">Tanggal mulai</Label>
-            <Input
-              id="event-start-date"
-              type="datetime-local"
-              aria-invalid={Boolean(errors.startDate)}
-              aria-describedby={
-                errors.startDate ? "event-start-date-error" : undefined
-              }
-              {...register("startDate")}
-            />
-            {errors.startDate ? (
-              <p
-                id="event-start-date-error"
-                className="text-destructive text-sm"
-              >
-                {errors.startDate.message}
-              </p>
-            ) : null}
-          </div>
+          <Controller
+            control={control}
+            name="startDate"
+            render={({ field }) => (
+              <DateTimeField
+                id="event-start-date"
+                label="Tanggal mulai"
+                value={field.value}
+                onChange={field.onChange}
+                error={errors.startDate?.message}
+              />
+            )}
+          />
 
-          <div className="space-y-2">
-            <Label htmlFor="event-end-date">Tanggal selesai</Label>
-            <Input
-              id="event-end-date"
-              type="datetime-local"
-              aria-invalid={Boolean(errors.endDate)}
-              aria-describedby={
-                errors.endDate ? "event-end-date-error" : undefined
-              }
-              {...register("endDate")}
-            />
-            {errors.endDate ? (
-              <p id="event-end-date-error" className="text-destructive text-sm">
-                {errors.endDate.message}
-              </p>
-            ) : null}
-          </div>
+          <Controller
+            control={control}
+            name="endDate"
+            render={({ field }) => (
+              <DateTimeField
+                id="event-end-date"
+                label="Tanggal selesai"
+                value={field.value}
+                onChange={field.onChange}
+                error={errors.endDate?.message}
+              />
+            )}
+          />
         </div>
 
         {typeEvent === "DISKON" ? (
@@ -324,31 +315,20 @@ export function EventForm({ editing }: Props) {
               product: field.product,
               onRemove: () => products.remove(index),
               control: (
-                <div className="space-y-1">
-                  <Label
-                    htmlFor={`event-discount-${field.id}`}
-                    className="text-xs"
-                  >
-                    Diskon (%)
-                  </Label>
-                  <Input
-                    id={`event-discount-${field.id}`}
-                    type="number"
-                    min={1}
-                    max={100}
-                    aria-invalid={Boolean(
-                      errors.products?.[index]?.discountPercent,
-                    )}
-                    {...register(`products.${index}.discountPercent`, {
-                      valueAsNumber: true,
-                    })}
-                  />
-                  {errors.products?.[index]?.discountPercent ? (
-                    <p className="text-destructive text-xs">
-                      {errors.products[index]?.discountPercent?.message}
-                    </p>
-                  ) : null}
-                </div>
+                <Controller
+                  control={control}
+                  name={`products.${index}.discountPercent`}
+                  render={({ field: percent }) => (
+                    <NumberField
+                      id={`event-discount-${field.id}`}
+                      label="Diskon"
+                      suffix="%"
+                      value={percent.value}
+                      onChange={(next) => percent.onChange(toNumber(next))}
+                      error={errors.products?.[index]?.discountPercent?.message}
+                    />
+                  )}
+                />
               ),
             }))}
           />
@@ -366,30 +346,19 @@ export function EventForm({ editing }: Props) {
                 product: field.product,
                 onRemove: () => bundleBuys.remove(index),
                 control: (
-                  <div className="space-y-1">
-                    <Label
-                      htmlFor={`event-buy-qty-${field.id}`}
-                      className="text-xs"
-                    >
-                      Kuantitas
-                    </Label>
-                    <Input
-                      id={`event-buy-qty-${field.id}`}
-                      type="number"
-                      min={1}
-                      aria-invalid={Boolean(
-                        errors.bundleBuys?.[index]?.quantity,
-                      )}
-                      {...register(`bundleBuys.${index}.quantity`, {
-                        valueAsNumber: true,
-                      })}
-                    />
-                    {errors.bundleBuys?.[index]?.quantity ? (
-                      <p className="text-destructive text-xs">
-                        {errors.bundleBuys[index]?.quantity?.message}
-                      </p>
-                    ) : null}
-                  </div>
+                  <Controller
+                    control={control}
+                    name={`bundleBuys.${index}.quantity`}
+                    render={({ field: quantity }) => (
+                      <NumberField
+                        id={`event-buy-qty-${field.id}`}
+                        label="Kuantitas"
+                        value={quantity.value}
+                        onChange={(next) => quantity.onChange(toNumber(next))}
+                        error={errors.bundleBuys?.[index]?.quantity?.message}
+                      />
+                    )}
+                  />
                 ),
               }))}
             />
@@ -407,30 +376,19 @@ export function EventForm({ editing }: Props) {
                 product: field.product,
                 onRemove: () => bundleRewards.remove(index),
                 control: (
-                  <div className="space-y-1">
-                    <Label
-                      htmlFor={`event-reward-qty-${field.id}`}
-                      className="text-xs"
-                    >
-                      Kuantitas
-                    </Label>
-                    <Input
-                      id={`event-reward-qty-${field.id}`}
-                      type="number"
-                      min={1}
-                      aria-invalid={Boolean(
-                        errors.bundleRewards?.[index]?.quantity,
-                      )}
-                      {...register(`bundleRewards.${index}.quantity`, {
-                        valueAsNumber: true,
-                      })}
-                    />
-                    {errors.bundleRewards?.[index]?.quantity ? (
-                      <p className="text-destructive text-xs">
-                        {errors.bundleRewards[index]?.quantity?.message}
-                      </p>
-                    ) : null}
-                  </div>
+                  <Controller
+                    control={control}
+                    name={`bundleRewards.${index}.quantity`}
+                    render={({ field: quantity }) => (
+                      <NumberField
+                        id={`event-reward-qty-${field.id}`}
+                        label="Kuantitas"
+                        value={quantity.value}
+                        onChange={(next) => quantity.onChange(toNumber(next))}
+                        error={errors.bundleRewards?.[index]?.quantity?.message}
+                      />
+                    )}
+                  />
                 ),
               }))}
             />
@@ -531,7 +489,7 @@ function ProductList({
                     alt=""
                     fill
                     sizes="160px"
-                    className="object-cover"
+                    className="object-contain p-1"
                     unoptimized
                   />
                 ) : null}
@@ -596,9 +554,19 @@ function toFormValues(event: AppEvent): FormValues {
 }
 
 /**
- * `<input type="datetime-local">` speaks local time without a zone, so the value
- * is built from the local parts; slicing an ISO string would show the UTC clock
- * and silently shift every event by seven hours.
+ * `NumberField` reports an empty box as null, which the schema does not model.
+ * Zero stands in for "nothing typed", and each field's own rule rejects it
+ * ("Diskon minimal 1%.", "Kuantitas minimal 1."), so the user still reads the
+ * message the schema wrote.
+ */
+function toNumber(value: number | null): number {
+  return value ?? 0;
+}
+
+/**
+ * `DateTimeField` kept the `datetime-local` wire format: local time without a
+ * zone, so the value is built from the local parts. Slicing an ISO string would
+ * show the UTC clock and silently shift every event by seven hours.
  */
 function toDateTimeInput(value: string): string {
   const date = new Date(value);

@@ -9,6 +9,7 @@ import {
   Package,
   ReceiptText,
   Settings,
+  ShieldCheck,
   Store,
   Tags,
   TrendingUp,
@@ -88,6 +89,7 @@ export const NAV_GROUPS: NavGroup[] = [
     label: "Lainnya",
     items: [
       { label: "Profil Toko", href: ROUTES.shopProfile, icon: Store },
+      { label: "Role dan Akses", href: ROUTES.roles, icon: ShieldCheck },
       { label: "Pengaturan", href: ROUTES.settings, icon: Settings },
     ],
   },

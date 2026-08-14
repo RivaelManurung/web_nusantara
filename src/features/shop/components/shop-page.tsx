@@ -73,6 +73,7 @@ export function ShopPage() {
             columns={columns}
             data={data?.items ?? []}
             isLoading={isLoading}
+            rowHref={(shop) => `${ROUTES.storeManagement}/${shop.id}/edit`}
             emptyMessage={
               params.search
                 ? `Tidak ada toko yang cocok dengan “${params.search}”.`

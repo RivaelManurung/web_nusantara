@@ -125,7 +125,7 @@ export function ProductSelectorDialog({
                               alt=""
                               fill
                               sizes="40px"
-                              className="object-cover"
+                              className="object-contain p-1"
                               unoptimized
                             />
                           ) : null}

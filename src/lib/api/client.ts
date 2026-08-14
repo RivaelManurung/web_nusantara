@@ -9,7 +9,7 @@ import { tokenStorage } from "@/lib/auth/token-storage";
 import type { Envelope, Paginated } from "@/types/api";
 import type { TokenPair } from "@/types/auth";
 
-import { ApiError, toApiError } from "./errors";
+import { toApiError } from "./errors";
 
 /** Called when the session cannot be recovered, so the app can sign the user out. */
 type SessionExpiredHandler = () => void;
@@ -101,16 +101,22 @@ http.interceptors.response.use(
   },
 );
 
-/** Unwraps the envelope, so callers receive the payload rather than the wrapper. */
+/**
+ * Unwraps the envelope, so callers receive the payload rather than the wrapper.
+ *
+ * A missing `data` is NOT an error. This runs only after the response
+ * interceptor has let the response through, which means the server answered
+ * 2xx; endpoints that change something and return nothing -- every status
+ * toggle, every delete, logout, change-password -- send `{status_code, message}`
+ * with `data` omitted.
+ *
+ * Throwing here turned all nineteen of those into failures whose message was
+ * the server's own success text, so the UI showed a red "event status updated"
+ * toast and, because the mutation never reached onSuccess, never invalidated
+ * the cache: the row kept its old status while the database had the new one.
+ */
 function unwrap<T>(envelope: Envelope<T>): T {
-  if (envelope.data === undefined) {
-    throw new ApiError(
-      envelope.message || "Server mengirim respons kosong.",
-      envelope.status_code,
-      envelope.error?.code ?? "INTERNAL_ERROR",
-    );
-  }
-  return envelope.data;
+  return envelope.data as T;
 }
 
 export const api = {

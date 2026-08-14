@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
-import { NotBuiltYet } from "@/components/shared/not-built-yet";
+import { FinancialReportPage } from "@/features/report/components/financial-report-page";
 
 export const metadata: Metadata = { title: "Laporan Keuangan" };
 
 export default function Page() {
-  return <NotBuiltYet description="Rekap keuangan per periode." />;
+  return <FinancialReportPage />;
 }

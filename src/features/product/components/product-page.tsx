@@ -76,6 +76,7 @@ export function ProductPage() {
             columns={columns}
             data={data?.items ?? []}
             isLoading={isLoading}
+            rowHref={(product) => `${ROUTES.products}/${product.id}/edit`}
             emptyMessage={
               params.search
                 ? `Tidak ada produk yang cocok dengan “${params.search}”.`
