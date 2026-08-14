@@ -1,0 +1,123 @@
+"use client";
+
+import { ImagePlus, X } from "lucide-react";
+import Image from "next/image";
+import { useEffect, useMemo, useState } from "react";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+
+interface ImageFieldProps {
+  id: string;
+  label: string;
+  /** Existing image URL, shown until the user picks a replacement. */
+  currentUrl?: string;
+  value: File | null;
+  onChange: (file: File | null) => void;
+  error?: string;
+  /** Rejects anything larger, before it reaches the network. */
+  maxSizeMb?: number;
+}
+
+/**
+ * File picker with a live preview.
+ *
+ * Size is checked here rather than only on the server: uploading two megabytes
+ * to be told it was too large wastes the user's data allowance, which matters
+ * on the mobile connections this admin panel is used on.
+ */
+export function ImageField({
+  id,
+  label,
+  currentUrl,
+  value,
+  onChange,
+  error,
+  maxSizeMb = 2,
+}: ImageFieldProps) {
+  const [localError, setLocalError] = useState<string | null>(null);
+
+  // Derived from the chosen file rather than mirrored into state, so there is
+  // no render where the preview and the file disagree.
+  const preview = useMemo(
+    () => (value ? URL.createObjectURL(value) : null),
+    [value],
+  );
+
+  // Object URLs pin the file in memory until revoked.
+  useEffect(() => {
+    if (!preview) return;
+    return () => URL.revokeObjectURL(preview);
+  }, [preview]);
+
+  function handleSelect(file: File | null) {
+    setLocalError(null);
+
+    if (file && file.size > maxSizeMb * 1024 * 1024) {
+      setLocalError(`Ukuran gambar maksimal ${maxSizeMb} MB.`);
+      onChange(null);
+      return;
+    }
+    onChange(file);
+  }
+
+  const shownUrl = preview ?? currentUrl;
+  const message = localError ?? error;
+
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={id}>{label}</Label>
+
+      <div className="flex items-start gap-3">
+        <div className="bg-muted relative size-20 shrink-0 overflow-hidden rounded-md border">
+          {shownUrl ? (
+            <Image
+              src={shownUrl}
+              alt=""
+              fill
+              sizes="80px"
+              className="object-cover"
+              unoptimized
+            />
+          ) : (
+            <div className="text-muted-foreground flex size-full items-center justify-center">
+              <ImagePlus className="size-6" aria-hidden />
+            </div>
+          )}
+        </div>
+
+        <div className="min-w-0 flex-1 space-y-2">
+          <Input
+            id={id}
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            aria-invalid={Boolean(message)}
+            aria-describedby={message ? `${id}-error` : undefined}
+            onChange={(event) => handleSelect(event.target.files?.[0] ?? null)}
+          />
+          <p className="text-muted-foreground text-xs">
+            PNG, JPG, atau WebP. Maksimal {maxSizeMb} MB.
+          </p>
+          {value ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => handleSelect(null)}
+            >
+              <X className="size-4" aria-hidden />
+              Hapus pilihan
+            </Button>
+          ) : null}
+        </div>
+      </div>
+
+      {message ? (
+        <p id={`${id}-error`} className="text-destructive text-sm">
+          {message}
+        </p>
+      ) : null}
+    </div>
+  );
+}
