@@ -101,6 +101,21 @@ export function BannerForm({ editing }: Props) {
       className="space-y-5"
       noValidate
     >
+      <Controller
+        control={control}
+        name="image"
+        render={({ field }) => (
+          <ImageField
+            id="banner-image"
+            label="Gambar"
+            currentUrl={editing?.photo}
+            value={field.value}
+            onChange={field.onChange}
+            error={errors.image?.message}
+          />
+        )}
+      />
+
       <div className="space-y-2">
         <Label htmlFor="banner-name">Nama banner</Label>
         <Input
@@ -158,21 +173,6 @@ export function BannerForm({ editing }: Props) {
           )}
         />
       )}
-
-      <Controller
-        control={control}
-        name="image"
-        render={({ field }) => (
-          <ImageField
-            id="banner-image"
-            label="Gambar"
-            currentUrl={editing?.photo}
-            value={field.value}
-            onChange={field.onChange}
-            error={errors.image?.message}
-          />
-        )}
-      />
 
       <FormActions cancelHref={ROUTES.banners} isPending={isPending} />
     </form>

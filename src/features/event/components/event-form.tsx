@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ROUTES } from "@/config/routes";
+import { formatCurrency } from "@/lib/format";
 
 import { useCreateEvent, useUpdateEvent } from "../queries";
 import type { AppEvent, EventProduct, EventType } from "../types";
@@ -465,37 +466,26 @@ function ProductList({
       {items.length === 0 ? (
         <p className="text-muted-foreground text-sm">{emptyMessage}</p>
       ) : (
-        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="space-y-2">
           {items.map((item) => (
             <li
               key={item.key}
-              className="bg-card relative space-y-2 rounded-md border p-2"
+              className="flex items-center gap-3 rounded-md border p-2"
             >
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="text-destructive absolute top-1 right-1 size-7"
-                onClick={item.onRemove}
-                aria-label={`Hapus ${item.product.name}`}
-              >
-                <Trash2 className="size-4" aria-hidden />
-              </Button>
-
-              <div className="bg-muted relative h-20 w-full overflow-hidden rounded">
+              <div className="bg-muted relative size-12 shrink-0 overflow-hidden rounded">
                 {item.product.image ? (
                   <Image
                     src={item.product.image}
                     alt=""
                     fill
-                    sizes="160px"
-                    className="object-contain p-1"
+                    sizes="48px"
+                    className="object-cover"
                     unoptimized
                   />
                 ) : null}
               </div>
 
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <p
                   className="truncate text-sm font-medium"
                   title={item.product.name}
@@ -503,11 +493,22 @@ function ProductList({
                   {item.product.name}
                 </p>
                 <p className="text-muted-foreground truncate text-xs">
-                  {item.product.code}
+                  {item.product.code} · {formatCurrency(item.product.price)}
                 </p>
               </div>
 
-              {item.control}
+              <div className="w-24 shrink-0">{item.control}</div>
+
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="text-destructive size-7 shrink-0"
+                onClick={item.onRemove}
+                aria-label={`Hapus ${item.product.name}`}
+              >
+                <Trash2 className="size-4" aria-hidden />
+              </Button>
             </li>
           ))}
         </ul>

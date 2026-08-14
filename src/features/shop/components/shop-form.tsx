@@ -12,6 +12,7 @@ import { z } from "zod";
 
 import { FormActions } from "@/components/shared/form-actions";
 import { ImageField } from "@/components/shared/image-field";
+import { ImagePreviewDialog } from "@/components/shared/image-preview-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -109,6 +110,9 @@ export function ShopForm({ editing }: Props) {
       editing?.gallery.map((url) => ({ kind: "existing", url }) as const) ?? [],
   );
   const [hasRemovedGallery, setHasRemovedGallery] = useState(false);
+  const [galleryPreviewSrc, setGalleryPreviewSrc] = useState<string | null>(
+    null,
+  );
   const [relationError, setRelationError] = useState<{
     cashiers?: string;
     products?: string;
@@ -371,14 +375,21 @@ export function ShopForm({ editing }: Props) {
             {gallery.map((item, index) => (
               <li key={item.url} className="relative">
                 <div className="bg-muted relative size-20 overflow-hidden rounded-md border">
-                  <Image
-                    src={item.url}
-                    alt=""
-                    fill
-                    sizes="80px"
-                    className="object-contain p-1"
-                    unoptimized
-                  />
+                  <button
+                    type="button"
+                    onClick={() => setGalleryPreviewSrc(item.url)}
+                    className="relative size-full"
+                    aria-label={`Pratinjau gambar galeri ${index + 1}`}
+                  >
+                    <Image
+                      src={item.url}
+                      alt=""
+                      fill
+                      sizes="80px"
+                      className="object-contain p-1"
+                      unoptimized
+                    />
+                  </button>
                 </div>
                 <Button
                   type="button"
@@ -409,6 +420,11 @@ export function ShopForm({ editing }: Props) {
       </div>
 
       <FormActions cancelHref={ROUTES.storeManagement} isPending={isPending} />
+
+      <ImagePreviewDialog
+        src={galleryPreviewSrc}
+        onOpenChange={(open) => !open && setGalleryPreviewSrc(null)}
+      />
     </form>
   );
 }

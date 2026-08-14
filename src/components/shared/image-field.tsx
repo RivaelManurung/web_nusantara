@@ -7,6 +7,8 @@ import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 
+import { ImagePreviewDialog } from "./image-preview-dialog";
+
 interface ImageFieldProps {
   id: string;
   label: string;
@@ -36,6 +38,7 @@ export function ImageField({
   maxSizeMb = 2,
 }: ImageFieldProps) {
   const [localError, setLocalError] = useState<string | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   // Derived from the chosen file rather than mirrored into state, so there is
   // no render where the preview and the file disagree.
@@ -71,14 +74,21 @@ export function ImageField({
       <div className="flex items-start gap-3">
         <div className="bg-muted relative size-20 shrink-0 overflow-hidden rounded-md border">
           {shownUrl ? (
-            <Image
-              src={shownUrl}
-              alt=""
-              fill
-              sizes="80px"
-              className="object-cover"
-              unoptimized
-            />
+            <button
+              type="button"
+              onClick={() => setPreviewOpen(true)}
+              className="relative size-full"
+              aria-label={`Pratinjau ${label}`}
+            >
+              <Image
+                src={shownUrl}
+                alt=""
+                fill
+                sizes="80px"
+                className="object-cover"
+                unoptimized
+              />
+            </button>
           ) : (
             <div className="text-muted-foreground flex size-full items-center justify-center">
               <ImagePlus className="size-6" aria-hidden />
@@ -133,6 +143,12 @@ export function ImageField({
           {message}
         </p>
       ) : null}
+
+      <ImagePreviewDialog
+        src={previewOpen ? (shownUrl ?? null) : null}
+        alt={label}
+        onOpenChange={setPreviewOpen}
+      />
     </div>
   );
 }

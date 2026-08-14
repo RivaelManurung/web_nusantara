@@ -7,6 +7,8 @@ import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 
+import { ImagePreviewDialog } from "@/components/shared/image-preview-dialog";
+
 import type { GalleryItem } from "../types";
 
 interface Props {
@@ -33,6 +35,7 @@ export function ProductGalleryField({
   maxSizeMb = 2,
 }: Props) {
   const [error, setError] = useState<string | null>(null);
+  const [previewSrc, setPreviewSrc] = useState<string | null>(null);
 
   // Object URLs pin the file in memory until revoked, so they are created once
   // per item and released when that item leaves the strip.
@@ -113,14 +116,21 @@ export function ProductGalleryField({
               className="relative"
             >
               <div className="bg-muted relative size-20 overflow-hidden rounded-md border">
-                <Image
-                  src={previews[index]}
-                  alt=""
-                  fill
-                  sizes="80px"
-                  className="object-contain p-1"
-                  unoptimized
-                />
+                <button
+                  type="button"
+                  onClick={() => setPreviewSrc(previews[index])}
+                  className="relative size-full"
+                  aria-label={`Pratinjau gambar ${index + 1}`}
+                >
+                  <Image
+                    src={previews[index]}
+                    alt=""
+                    fill
+                    sizes="80px"
+                    className="object-contain p-1"
+                    unoptimized
+                  />
+                </button>
               </div>
               <Button
                 type="button"
@@ -142,6 +152,11 @@ export function ProductGalleryField({
           {error}
         </p>
       ) : null}
+
+      <ImagePreviewDialog
+        src={previewSrc}
+        onOpenChange={(open) => !open && setPreviewSrc(null)}
+      />
     </div>
   );
 }
