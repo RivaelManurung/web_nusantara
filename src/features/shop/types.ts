@@ -114,6 +114,8 @@ export interface ProductPick {
   id: string;
   name: string;
   code?: string;
+  /** Catalogue price, shown as the placeholder when a shop does not override it. */
+  price?: number;
 }
 
 /** One row of the form's product table, before it becomes the wire payload. */
