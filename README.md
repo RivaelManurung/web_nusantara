@@ -1,36 +1,102 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# web_nusantara
 
-## Getting Started
+Admin panel for Nusantara Oleh-Oleh. A rewrite of `nusantara_web`
+(Vue 3 + Vite + Pinia) on **Next.js 16 App Router**, **TypeScript**, and
+**shadcn/ui on Base UI**.
 
-First, run the development server:
+## Requirements
+
+- Node 20+
+- The API from `service_nusantara` (or `nusantara_service`) running
+
+## Running
 
 ```bash
+cp .env.example .env.local     # then set NEXT_PUBLIC_API_BASE_URL
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+| Variable | Required | Purpose |
+| --- | --- | --- |
+| `NEXT_PUBLIC_API_BASE_URL` | yes | API root including the version prefix, e.g. `http://localhost:8080/api/v1` |
+| `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | no | Only the shop location picker uses it |
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Missing required variables fail at module load (`src/config/env.ts`) rather than
+on the first request, so a misconfigured deployment breaks the build instead of
+a user's session.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Layout
 
-## Learn More
+```
+src/
+├── app/
+│   ├── (auth)/login/            unauthenticated shell
+│   ├── (dashboard)/             RouteGuard + AppShell, one folder per route
+│   ├── 403/
+│   └── layout.tsx               theme → query → session → tooltip providers
+├── components/
+│   ├── ui/                      shadcn primitives (generated; edit sparingly)
+│   ├── shared/                  DataTable, Pagination, SearchInput, ConfirmDialog, ImageField…
+│   ├── layout/                  AppShell, SidebarNav, ProfileMenu, ThemeToggle
+│   ├── auth/route-guard.tsx     role enforcement
+│   └── providers/
+├── config/                      env, routes + roles, navigation
+├── features/<feature>/          types · api · queries · components
+├── hooks/, lib/, stores/, types/
+└── proxy.ts                     turns anonymous visitors away before render
+```
 
-To learn more about Next.js, take a look at the following resources:
+Features are vertical slices. Changing "how vouchers work" touches one folder.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## What changed from the Vue app
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+**The clean-architecture layers collapsed.** Each Vue feature had
+`data/source` + `data/repository` + `domain/entities` + `domain/repository` +
+`domain/use-case` + `presentation/store` — six layers and roughly fourteen files
+to list a table. Repositories returned an Either-style `{ left, right }` that
+every caller unwrapped before it could do anything.
 
-## Deploy on Vercel
+Here that is `api.ts` (endpoints) + `queries.ts` (TanStack Query hooks).
+Failures are thrown `ApiError`s; Query catches them and hands components
+`data` / `isLoading` / `error`. The domain→DTO mapping that justified the layers
+survives, in `types.ts`.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+**Server state left the store.** Every Pinia store hand-rolled its own
+`items` / `isLoading` / `error` triple plus a refetch, and they had drifted apart
+— some cached, some refetched on every mount, some never invalidated after a
+write. TanStack Query owns that now. Only the session and the selected shop
+remain in Zustand.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**Auth follows the rewritten backend.** The Vue app stored one `auth_token` in
+localStorage. The backend now issues an access/refresh pair, so the client
+refreshes proactively before expiry and shares one in-flight refresh across
+concurrent requests — refresh tokens are single-use, so six parallel refreshes
+would log the user out.
+
+**Route roles have one home.** Paths lived in `router/path.js` and their roles in
+`router/index.js`, so adding a page meant editing two files and it was easy to
+ship one with no guard. `src/config/routes.ts` holds both, and the sidebar
+derives visibility from it — a link cannot appear for a role the route rejects.
+
+**Redirects left the transport layer.** The Vue axios interceptor imported the
+auth store and the router to redirect on 401. Here the client raises a callback
+and `SessionProvider` decides what that means for navigation.
+
+**Tables and dialogs are shared.** Each Vue page hand-wrote its own `<table>`, so
+loading and empty states were inconsistent. One `DataTable`, one `Pagination`,
+one `ConfirmDialog`.
+
+## Adding a feature
+
+See [PORTING.md](PORTING.md). The reference implementation is
+`src/features/type-product/`.
+
+## Checks
+
+```bash
+npm run lint
+npx tsc --noEmit
+npm run build
+```
+# web_nusantara
