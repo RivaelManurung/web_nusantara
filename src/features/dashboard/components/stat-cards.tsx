@@ -87,7 +87,9 @@ function StatCard({ stat }: { stat: Stat }) {
         <p
           className={cn(
             "flex items-center gap-1 text-xs font-medium",
-            isUp ? "text-emerald-600 dark:text-emerald-400" : "text-destructive",
+            isUp
+              ? "text-emerald-600 dark:text-emerald-400"
+              : "text-destructive",
           )}
         >
           <DeltaIcon className="size-3.5" aria-hidden />

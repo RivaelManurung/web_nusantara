@@ -17,6 +17,15 @@ export const bannerKeys = {
   detail: (id: string) => [KEY, "detail", id] as const,
 };
 
+/** One record, for the edit screen. */
+export function useBanner(id: string | null) {
+  return useQuery({
+    queryKey: bannerKeys.detail(id ?? ""),
+    queryFn: () => bannerApi.byId(id as string),
+    enabled: Boolean(id),
+  });
+}
+
 export function useBanners(params: ListParams) {
   return useQuery({
     queryKey: bannerKeys.list(params),
@@ -71,7 +80,8 @@ export function useSetBannerStatus() {
       toast.success("Status banner diperbarui.");
       await invalidate();
     },
-    onError: (error) => toast.error(messageFor(error, "Gagal mengubah status.")),
+    onError: (error) =>
+      toast.error(messageFor(error, "Gagal mengubah status.")),
   });
 }
 
@@ -84,7 +94,8 @@ export function useDeleteBanner() {
       toast.success("Banner berhasil dihapus.");
       await invalidate();
     },
-    onError: (error) => toast.error(messageFor(error, "Gagal menghapus banner.")),
+    onError: (error) =>
+      toast.error(messageFor(error, "Gagal menghapus banner.")),
   });
 }
 

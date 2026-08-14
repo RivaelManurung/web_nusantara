@@ -1,6 +1,7 @@
 "use client";
 
 import { Plus } from "lucide-react";
+import Link from "next/link";
 import { useCallback, useState } from "react";
 
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
@@ -10,33 +11,22 @@ import { Pagination } from "@/components/shared/pagination";
 import { SearchInput } from "@/components/shared/search-input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { ROUTES } from "@/config/routes";
 import { useListParams } from "@/hooks/use-list-params";
 import { ApiError } from "@/lib/api/errors";
 
-import {
-  useCashiers,
-  useDeleteCashier,
-  useSetCashierStatus,
-} from "../queries";
+import { useCashiers, useDeleteCashier, useSetCashierStatus } from "../queries";
 import type { Cashier } from "../types";
-import { CashierFormDialog } from "./cashier-form-dialog";
 import { useCashierColumns } from "./cashier-table";
 
 export function CashierPage() {
   const { params, setPage, setSearch } = useListParams();
   const { data, isLoading, isFetching, error } = useCashiers(params);
 
-  const [formOpen, setFormOpen] = useState(false);
-  const [editing, setEditing] = useState<Cashier | null>(null);
   const [pendingDelete, setPendingDelete] = useState<Cashier | null>(null);
 
   const statusMutation = useSetCashierStatus();
   const deleteMutation = useDeleteCashier();
-
-  const handleEdit = useCallback((row: Cashier) => {
-    setEditing(row);
-    setFormOpen(true);
-  }, []);
 
   const handleToggleStatus = useCallback(
     (row: Cashier) =>
@@ -45,7 +35,7 @@ export function CashierPage() {
   );
 
   const columns = useCashierColumns({
-    onEdit: handleEdit,
+    editHref: (row) => `${ROUTES.cashierManagement}/${row.id}/edit`,
     onDelete: setPendingDelete,
     onToggleStatus: handleToggleStatus,
     isTogglingId: statusMutation.isPending
@@ -56,15 +46,9 @@ export function CashierPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Manajemen Kasir"
         description="Akun kasir yang dapat ditugaskan ke toko."
         actions={
-          <Button
-            onClick={() => {
-              setEditing(null);
-              setFormOpen(true);
-            }}
-          >
+          <Button render={<Link href={`${ROUTES.cashierManagement}/new`} />}>
             <Plus className="size-4" aria-hidden />
             Tambah Kasir
           </Button>
@@ -106,16 +90,10 @@ export function CashierPage() {
         </>
       )}
 
-      <CashierFormDialog
-        open={formOpen}
-        onOpenChange={setFormOpen}
-        editing={editing}
-      />
-
       <ConfirmDialog
+        title="Hapus kasir?"
         open={Boolean(pendingDelete)}
         onOpenChange={(open) => !open && setPendingDelete(null)}
-        title="Hapus kasir?"
         description={`Akun “${pendingDelete?.name}” akan dihapus dan tidak dapat lagi masuk ke aplikasi.`}
         confirmLabel="Hapus"
         destructive

@@ -3,6 +3,7 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useMemo } from "react";
 
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -19,7 +20,8 @@ import { formatDate } from "@/lib/format";
 import type { Cashier } from "../types";
 
 interface Options {
-  onEdit: (row: Cashier) => void;
+  /** Edit is a real page now, so the row links rather than opening a dialog. */
+  editHref: (row: Cashier) => string;
   onDelete: (row: Cashier) => void;
   onToggleStatus: (row: Cashier) => void;
   isTogglingId?: string | null;
@@ -27,7 +29,7 @@ interface Options {
 
 /** Column definitions, memoised so the table does not rebuild on every render. */
 export function useCashierColumns({
-  onEdit,
+  editHref,
   onDelete,
   onToggleStatus,
   isTogglingId,
@@ -113,7 +115,9 @@ export function useCashierColumns({
                 }
               />
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => onEdit(row.original)}>
+                <DropdownMenuItem
+                  render={<Link href={editHref(row.original)} />}
+                >
                   <Pencil className="size-4" aria-hidden />
                   Ubah
                 </DropdownMenuItem>
@@ -130,6 +134,6 @@ export function useCashierColumns({
         ),
       },
     ],
-    [isTogglingId, onDelete, onEdit, onToggleStatus],
+    [editHref, isTogglingId, onDelete, onToggleStatus],
   );
 }

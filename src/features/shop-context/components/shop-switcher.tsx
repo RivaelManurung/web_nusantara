@@ -34,8 +34,14 @@ export function ShopSwitcher() {
   const pathname = usePathname();
   const role = useAuthStore((state) => state.profile?.role);
 
-  const { shops, activeShop, activeShopId, hasAssignedShops, isLoading, selectShop } =
-    useShopContext();
+  const {
+    shops,
+    activeShop,
+    activeShopId,
+    hasAssignedShops,
+    isLoading,
+    selectShop,
+  } = useShopContext();
 
   useEffect(() => {
     if (role !== "admin") return;

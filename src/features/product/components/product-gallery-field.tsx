@@ -1,11 +1,10 @@
 "use client";
 
-import { X } from "lucide-react";
+import { ImagePlus, X } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 import type { GalleryItem } from "../types";
@@ -78,11 +77,14 @@ export function ProductGalleryField({
     <div className="space-y-2">
       <Label htmlFor={id}>{label}</Label>
 
-      <Input
+      {/* Hidden control driven by a styled label; the native widget cannot be
+          themed and reads differently in every browser. */}
+      <input
         id={id}
         type="file"
         multiple
         accept="image/png,image/jpeg,image/webp"
+        className="sr-only"
         aria-invalid={Boolean(error)}
         aria-describedby={error ? `${id}-error` : undefined}
         onChange={(event) => {
@@ -91,6 +93,13 @@ export function ProductGalleryField({
           event.target.value = "";
         }}
       />
+      <Label
+        htmlFor={id}
+        className="border-input bg-background hover:bg-accent inline-flex cursor-pointer items-center gap-2 rounded-md border px-3 py-2 text-sm font-medium transition-colors"
+      >
+        <ImagePlus className="size-4" aria-hidden />
+        Tambah gambar
+      </Label>
       <p className="text-muted-foreground text-xs">
         Bisa pilih lebih dari satu. PNG, JPG, atau WebP, maksimal {maxSizeMb} MB
         per gambar.

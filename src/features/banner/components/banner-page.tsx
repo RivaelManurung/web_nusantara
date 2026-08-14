@@ -1,6 +1,7 @@
 "use client";
 
 import { Plus } from "lucide-react";
+import Link from "next/link";
 import { useCallback, useState } from "react";
 
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
@@ -10,29 +11,22 @@ import { Pagination } from "@/components/shared/pagination";
 import { SearchInput } from "@/components/shared/search-input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { ROUTES } from "@/config/routes";
 import { useListParams } from "@/hooks/use-list-params";
 import { ApiError } from "@/lib/api/errors";
 
 import { useBanners, useDeleteBanner, useSetBannerStatus } from "../queries";
 import type { Banner } from "../types";
-import { BannerFormDialog } from "./banner-form-dialog";
 import { useBannerColumns } from "./banner-table";
 
 export function BannerPage() {
   const { params, setPage, setSearch } = useListParams();
   const { data, isLoading, isFetching, error } = useBanners(params);
 
-  const [formOpen, setFormOpen] = useState(false);
-  const [editing, setEditing] = useState<Banner | null>(null);
   const [pendingDelete, setPendingDelete] = useState<Banner | null>(null);
 
   const statusMutation = useSetBannerStatus();
   const deleteMutation = useDeleteBanner();
-
-  const handleEdit = useCallback((row: Banner) => {
-    setEditing(row);
-    setFormOpen(true);
-  }, []);
 
   const handleToggleStatus = useCallback(
     (row: Banner) =>
@@ -41,24 +35,20 @@ export function BannerPage() {
   );
 
   const columns = useBannerColumns({
-    onEdit: handleEdit,
+    editHref: (row) => `${ROUTES.banners}/${row.id}/edit`,
     onDelete: setPendingDelete,
     onToggleStatus: handleToggleStatus,
-    isTogglingId: statusMutation.isPending ? statusMutation.variables?.id : null,
+    isTogglingId: statusMutation.isPending
+      ? statusMutation.variables?.id
+      : null,
   });
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Banner"
         description="Gambar promosi yang tampil di beranda aplikasi."
         actions={
-          <Button
-            onClick={() => {
-              setEditing(null);
-              setFormOpen(true);
-            }}
-          >
+          <Button render={<Link href={`${ROUTES.banners}/new`} />}>
             <Plus className="size-4" aria-hidden />
             Tambah banner
           </Button>
@@ -100,16 +90,10 @@ export function BannerPage() {
         </>
       )}
 
-      <BannerFormDialog
-        open={formOpen}
-        onOpenChange={setFormOpen}
-        editing={editing}
-      />
-
       <ConfirmDialog
+        title="Hapus banner?"
         open={Boolean(pendingDelete)}
         onOpenChange={(open) => !open && setPendingDelete(null)}
-        title="Hapus banner?"
         description={`“${pendingDelete?.name}” akan dihapus dan tidak lagi tampil di aplikasi.`}
         confirmLabel="Hapus"
         destructive

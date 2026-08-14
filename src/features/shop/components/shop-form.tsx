@@ -1,31 +1,26 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ImagePlus, Loader2, X } from "lucide-react";
+import { ImagePlus, X } from "lucide-react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
+
+import { useInvalidSubmit } from "@/hooks/use-invalid-submit";
 import { z } from "zod";
 
+import { FormActions } from "@/components/shared/form-actions";
 import { ImageField } from "@/components/shared/image-field";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
+import { ROUTES } from "@/config/routes";
 import { useCashierOptions } from "@/features/cashier/queries";
 import { useProducts } from "@/features/product/queries";
 
-import { useCreateShop, useShop, useUpdateShop } from "../queries";
+import { useCreateShop, useUpdateShop } from "../queries";
 import type {
   GalleryItem,
   ProductPick,
@@ -74,70 +69,13 @@ const DEFAULT_COORDINATES = { lat: -6.2088, lng: 106.8456 } as const;
 const MAX_GALLERY_MB = 2;
 
 interface Props {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  /** Absent when creating. */
+  /** The shop being edited, already loaded. Absent when creating. */
   editing?: Shop | null;
 }
 
-/**
- * Chrome and data loading only.
- *
- * The form itself is a separate component so that seeding it is a mount rather
- * than an effect: this wrapper renders nothing until the shop it is editing has
- * arrived, then mounts the body keyed by shop id. Opening a different row, or
- * reopening the same one after a cancel, remounts the body with fresh state --
- * which is what a "reset the form" effect was doing by hand, one render too
- * late and with an empty-fields flash in between.
- */
-export function ShopFormDialog({ open, onOpenChange, editing }: Props) {
+export function ShopForm({ editing }: Props) {
+  const router = useRouter();
   const isEditing = Boolean(editing);
-
-  // The list response does not reliably carry the relations, so the form seeds
-  // itself from the detail endpoint.
-  const { data: detail, isLoading: isLoadingDetail } = useShop(
-    open && editing ? editing.id : null,
-  );
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
-        <DialogHeader>
-          <DialogTitle>{isEditing ? "Ubah Toko" : "Tambah Toko"}</DialogTitle>
-          <DialogDescription>
-            Lengkapi informasi toko, lokasinya, kasir yang bertugas, dan produk
-            yang dijual.
-          </DialogDescription>
-        </DialogHeader>
-
-        {!open ? null : isEditing && isLoadingDetail ? (
-          <Skeleton className="h-96 w-full" />
-        ) : isEditing && !detail ? (
-          <Alert variant="destructive">
-            <AlertDescription>
-              Gagal memuat data toko. Tutup dialog ini dan coba lagi.
-            </AlertDescription>
-          </Alert>
-        ) : (
-          <ShopFormBody
-            key={editing?.id ?? "new"}
-            shop={isEditing ? (detail ?? null) : null}
-            onOpenChange={onOpenChange}
-          />
-        )}
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-interface BodyProps {
-  /** The shop being edited, already loaded. Null means this is a create. */
-  shop: Shop | null;
-  onOpenChange: (open: boolean) => void;
-}
-
-function ShopFormBody({ shop, onOpenChange }: BodyProps) {
-  const isEditing = Boolean(shop);
 
   const { data: cashierPage, isLoading: isLoadingCashiers } =
     useCashierOptions();
@@ -151,13 +89,14 @@ function ShopFormBody({ shop, onOpenChange }: BodyProps) {
   const updateMutation = useUpdateShop();
   const isPending = createMutation.isPending || updateMutation.isPending;
 
-  // Seeded once, at mount. The wrapper's `key` is what re-seeds them.
+  // Seeded once, at mount. The page remounts per record, so there is no stale
+  // state to reset.
   const [cashierIds, setCashierIds] = useState<string[]>(
-    () => shop?.cashiers.map((cashier) => cashier.id) ?? [],
+    () => editing?.cashiers.map((cashier) => cashier.id) ?? [],
   );
   const [products, setProducts] = useState<ShopProductInput[]>(
     () =>
-      shop?.products.map((product) => ({
+      editing?.products.map((product) => ({
         productId: product.id,
         name: product.name,
         stock: product.stock,
@@ -166,7 +105,8 @@ function ShopFormBody({ shop, onOpenChange }: BodyProps) {
       })) ?? [],
   );
   const [gallery, setGallery] = useState<GalleryItem[]>(
-    () => shop?.gallery.map((url) => ({ kind: "existing", url }) as const) ?? [],
+    () =>
+      editing?.gallery.map((url) => ({ kind: "existing", url }) as const) ?? [],
   );
   const [hasRemovedGallery, setHasRemovedGallery] = useState(false);
   const [relationError, setRelationError] = useState<{
@@ -191,6 +131,8 @@ function ShopFormBody({ shop, onOpenChange }: BodyProps) {
     [],
   );
 
+  const onInvalid = useInvalidSubmit();
+
   const {
     register,
     control,
@@ -200,11 +142,11 @@ function ShopFormBody({ shop, onOpenChange }: BodyProps) {
   } = useForm<ShopFormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      name: shop?.name ?? "",
-      description: shop?.description ?? "",
-      fullAddress: shop?.fullAddress ?? "",
-      lat: shop?.lat ?? DEFAULT_COORDINATES.lat,
-      lng: shop?.lng ?? DEFAULT_COORDINATES.lng,
+      name: editing?.name ?? "",
+      description: editing?.description ?? "",
+      fullAddress: editing?.fullAddress ?? "",
+      lat: editing?.lat ?? DEFAULT_COORDINATES.lat,
+      lng: editing?.lng ?? DEFAULT_COORDINATES.lng,
       cover: null,
     },
   });
@@ -306,22 +248,26 @@ function ShopFormBody({ shop, onOpenChange }: BodyProps) {
       hasRemovedGallery,
     };
 
-    if (shop) {
-      await updateMutation.mutateAsync({ id: shop.id, input });
+    if (editing) {
+      await updateMutation.mutateAsync({ id: editing.id, input });
     } else {
       await createMutation.mutateAsync(input);
     }
 
-    onOpenChange(false);
+    router.push(ROUTES.storeManagement);
   }
 
   // useWatch rather than watch(): watch() returns a fresh function on every
-  // render, which makes React Compiler skip memoizing this whole dialog.
+  // render, which makes React Compiler skip memoizing this whole form.
   const lat = useWatch({ control, name: "lat" });
   const lng = useWatch({ control, name: "lng" });
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
+    <form
+      onSubmit={handleSubmit(onSubmit, onInvalid)}
+      className="space-y-6"
+      noValidate
+    >
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="shop-name">Nama toko</Label>
@@ -386,7 +332,7 @@ function ShopFormBody({ shop, onOpenChange }: BodyProps) {
           <ImageField
             id="shop-cover"
             label="Gambar utama (cover)"
-            currentUrl={shop?.cover ?? undefined}
+            currentUrl={editing?.cover ?? undefined}
             value={field.value}
             onChange={field.onChange}
             error={errors.cover?.message}
@@ -396,17 +342,26 @@ function ShopFormBody({ shop, onOpenChange }: BodyProps) {
 
       <div className="space-y-2">
         <Label htmlFor="shop-gallery">Galeri gambar</Label>
-        <Input
+        {/* Hidden control driven by a styled label; see ImageField. */}
+        <input
           id="shop-gallery"
           type="file"
           multiple
           accept="image/png,image/jpeg,image/webp"
+          className="sr-only"
           onChange={(event) => {
             handleAddGallery(event.target.files);
             // Clearing lets the same file be picked again after a removal.
             event.target.value = "";
           }}
         />
+        <Label
+          htmlFor="shop-gallery"
+          className="border-input bg-background hover:bg-accent inline-flex cursor-pointer items-center gap-2 rounded-md border px-3 py-2 text-sm font-medium transition-colors"
+        >
+          <ImagePlus className="size-4" aria-hidden />
+          Tambah gambar
+        </Label>
         <p className="text-muted-foreground text-xs">
           PNG, JPG, atau WebP. Maksimal {MAX_GALLERY_MB} MB per gambar.
         </p>
@@ -453,26 +408,7 @@ function ShopFormBody({ shop, onOpenChange }: BodyProps) {
         ) : null}
       </div>
 
-      <DialogFooter>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => onOpenChange(false)}
-          disabled={isPending}
-        >
-          Batal
-        </Button>
-        <Button type="submit" disabled={isPending}>
-          {isPending ? (
-            <>
-              <Loader2 className="size-4 animate-spin" aria-hidden />
-              Menyimpan…
-            </>
-          ) : (
-            "Simpan"
-          )}
-        </Button>
-      </DialogFooter>
+      <FormActions cancelHref={ROUTES.storeManagement} isPending={isPending} />
     </form>
   );
 }

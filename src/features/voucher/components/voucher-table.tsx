@@ -2,6 +2,7 @@
 
 import type { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import Link from "next/link";
 import { useMemo } from "react";
 
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -18,7 +19,8 @@ import { formatCurrency, formatDate } from "@/lib/format";
 import type { Voucher } from "../types";
 
 interface Options {
-  onEdit: (row: Voucher) => void;
+  /** Edit is a real page now, so the row links rather than opening a dialog. */
+  editHref: (row: Voucher) => string;
   onDelete: (row: Voucher) => void;
   onToggleStatus: (row: Voucher) => void;
   isTogglingId?: string | null;
@@ -33,7 +35,7 @@ export function describeDiscount(voucher: Voucher): string {
 
 /** Column definitions, memoised so the table does not rebuild on every render. */
 export function useVoucherColumns({
-  onEdit,
+  editHref,
   onDelete,
   onToggleStatus,
   isTogglingId,
@@ -131,7 +133,9 @@ export function useVoucherColumns({
                 }
               />
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => onEdit(row.original)}>
+                <DropdownMenuItem
+                  render={<Link href={editHref(row.original)} />}
+                >
                   <Pencil className="size-4" aria-hidden />
                   Ubah
                 </DropdownMenuItem>
@@ -148,6 +152,6 @@ export function useVoucherColumns({
         ),
       },
     ],
-    [isTogglingId, onDelete, onEdit, onToggleStatus],
+    [editHref, isTogglingId, onDelete, onToggleStatus],
   );
 }

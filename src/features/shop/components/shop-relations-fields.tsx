@@ -23,7 +23,10 @@ interface Props {
 
   selectedProducts: ShopProductInput[];
   onToggleProduct: (option: ProductPick, selected: boolean) => void;
-  onChangeProduct: (productId: string, patch: Partial<ShopProductInput>) => void;
+  onChangeProduct: (
+    productId: string,
+    patch: Partial<ShopProductInput>,
+  ) => void;
   productError?: string;
 }
 

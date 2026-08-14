@@ -2,12 +2,7 @@
 
 import { PageHeader } from "@/components/shared/page-header";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { ChangePasswordForm } from "./change-password-form";
 import { EditProfileForm } from "./edit-profile-form";
@@ -22,10 +17,7 @@ import { EditProfileForm } from "./edit-profile-form";
 export function SettingsPage() {
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Pengaturan Akun"
-        description="Data akun Anda dan keamanan masuk."
-      />
+      <PageHeader description="Data akun Anda dan keamanan masuk." />
 
       <Card>
         <CardContent>

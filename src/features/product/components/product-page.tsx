@@ -1,6 +1,7 @@
 "use client";
 
 import { Plus } from "lucide-react";
+import Link from "next/link";
 import { useCallback, useState } from "react";
 
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
@@ -10,12 +11,12 @@ import { Pagination } from "@/components/shared/pagination";
 import { SearchInput } from "@/components/shared/search-input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { ROUTES } from "@/config/routes";
 import { useListParams } from "@/hooks/use-list-params";
 import { ApiError } from "@/lib/api/errors";
 
 import { useDeleteProduct, useProducts, useSetProductStatus } from "../queries";
 import type { Product } from "../types";
-import { ProductFormDialog } from "./product-form-dialog";
 import { ProductGalleryDialog } from "./product-gallery-dialog";
 import { useProductColumns } from "./product-table";
 
@@ -23,18 +24,11 @@ export function ProductPage() {
   const { params, setPage, setSearch } = useListParams();
   const { data, isLoading, isFetching, error } = useProducts(params);
 
-  const [formOpen, setFormOpen] = useState(false);
-  const [editing, setEditing] = useState<Product | null>(null);
   const [pendingDelete, setPendingDelete] = useState<Product | null>(null);
   const [gallery, setGallery] = useState<Product | null>(null);
 
   const statusMutation = useSetProductStatus();
   const deleteMutation = useDeleteProduct();
-
-  const handleEdit = useCallback((row: Product) => {
-    setEditing(row);
-    setFormOpen(true);
-  }, []);
 
   const handleToggleStatus = useCallback(
     (row: Product) =>
@@ -43,7 +37,7 @@ export function ProductPage() {
   );
 
   const columns = useProductColumns({
-    onEdit: handleEdit,
+    editHref: (row) => `${ROUTES.products}/${row.id}/edit`,
     onDelete: setPendingDelete,
     onToggleStatus: handleToggleStatus,
     onViewGallery: setGallery,
@@ -55,15 +49,9 @@ export function ProductPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Produk"
         description="Katalog produk yang bisa ditugaskan ke setiap toko."
         actions={
-          <Button
-            onClick={() => {
-              setEditing(null);
-              setFormOpen(true);
-            }}
-          >
+          <Button render={<Link href={`${ROUTES.products}/new`} />}>
             <Plus className="size-4" aria-hidden />
             Tambah Produk
           </Button>
@@ -105,21 +93,15 @@ export function ProductPage() {
         </>
       )}
 
-      <ProductFormDialog
-        open={formOpen}
-        onOpenChange={setFormOpen}
-        editing={editing}
-      />
-
       <ProductGalleryDialog
         product={gallery}
         onOpenChange={(open) => !open && setGallery(null)}
       />
 
       <ConfirmDialog
+        title="Hapus produk?"
         open={Boolean(pendingDelete)}
         onOpenChange={(open) => !open && setPendingDelete(null)}
-        title="Hapus produk?"
         description={`“${pendingDelete?.name}” akan dihapus. Toko yang menjual produk ini bisa ikut terpengaruh.`}
         confirmLabel="Hapus"
         destructive

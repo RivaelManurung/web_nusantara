@@ -44,8 +44,11 @@ export function ShopProfilePage() {
         assignedShops[0].id)
       : null;
 
-  const { data: shop, isLoading: isLoadingShop, error: shopError } =
-    useShopDetails(selectedId);
+  const {
+    data: shop,
+    isLoading: isLoadingShop,
+    error: shopError,
+  } = useShopDetails(selectedId);
   const { data: products, isLoading: isLoadingProducts } =
     useShopProducts(selectedId);
   const columns = useShopProductColumns();
@@ -55,7 +58,6 @@ export function ShopProfilePage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Profil Toko"
         description="Informasi toko tempat Anda bertugas."
         actions={
           assignedShops && assignedShops.length > 1 ? (
@@ -227,8 +229,7 @@ function LocationCard({ lat, lng }: { lat: number; lng: number }) {
           </a>
         ) : (
           <p className="text-muted-foreground bg-muted/50 rounded-md border p-4 text-sm">
-            Pratinjau peta tidak tersedia karena kunci Google Maps belum
-            diatur.
+            Pratinjau peta tidak tersedia karena kunci Google Maps belum diatur.
           </p>
         )}
 

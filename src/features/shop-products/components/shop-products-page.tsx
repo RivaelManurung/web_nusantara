@@ -80,7 +80,6 @@ export function ShopProductsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Produk Toko"
         description={
           shopQuery.data
             ? `Menampilkan produk untuk ${shopQuery.data.name}.`

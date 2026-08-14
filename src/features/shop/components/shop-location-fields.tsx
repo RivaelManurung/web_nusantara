@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
 // Type-only import; the dialog owns the schema these fields are registered against.
-import type { ShopFormValues } from "./shop-form-dialog";
+import type { ShopFormValues } from "./shop-form";
 
 interface Props {
   register: UseFormRegister<ShopFormValues>;

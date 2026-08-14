@@ -127,8 +127,7 @@ export interface ShopProductInput {
 
 /** An image already stored on the shop, or a newly picked file. */
 export type GalleryItem =
-  | { kind: "existing"; url: string }
-  | { kind: "new"; file: File; url: string };
+  { kind: "existing"; url: string } | { kind: "new"; file: File; url: string };
 
 export interface ShopInput {
   name: string;

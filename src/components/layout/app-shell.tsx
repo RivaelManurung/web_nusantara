@@ -3,6 +3,7 @@
 import { Menu } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 import { ProfileMenu } from "@/components/layout/profile-menu";
@@ -17,6 +18,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { pageTitleFor } from "@/config/page-meta";
 import { ROUTES } from "@/config/routes";
 
 /**
@@ -28,6 +30,8 @@ import { ROUTES } from "@/config/routes";
  */
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const pathname = usePathname();
+  const title = pageTitleFor(pathname);
 
   return (
     <div className="bg-muted/30 flex min-h-svh">
@@ -67,9 +71,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </SheetContent>
             </Sheet>
 
-            <div className="lg:hidden">
-              <BrandMark />
-            </div>
+            {/* The page heading lives in the bar, so it stays visible while the
+                content scrolls and every screen gets the same anchor. */}
+            <h1 className="truncate text-lg font-semibold tracking-tight">
+              {title}
+            </h1>
           </div>
 
           <div className="flex items-center gap-1 sm:gap-2">

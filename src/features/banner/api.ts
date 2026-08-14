@@ -1,7 +1,12 @@
 import { api } from "@/lib/api/client";
 import type { ListParams, Paginated } from "@/types/api";
 
-import { toBanner, type Banner, type BannerDto, type BannerInput } from "./types";
+import {
+  toBanner,
+  type Banner,
+  type BannerDto,
+  type BannerInput,
+} from "./types";
 
 const BASE = "/banner";
 
@@ -41,7 +46,11 @@ export const bannerApi = {
 
   async update(id: string, input: BannerInput): Promise<Banner> {
     return toBanner(
-      await api.upload<BannerDto>(`${BASE}/${id}/edit`, toFormData(input), "put"),
+      await api.upload<BannerDto>(
+        `${BASE}/${id}/edit`,
+        toFormData(input),
+        "put",
+      ),
     );
   },
 

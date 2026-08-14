@@ -17,6 +17,15 @@ export const typeProductKeys = {
   detail: (id: string) => [KEY, "detail", id] as const,
 };
 
+/** One record, for the edit screen. */
+export function useTypeProduct(id: string | null) {
+  return useQuery({
+    queryKey: typeProductKeys.detail(id ?? ""),
+    queryFn: () => typeProductApi.byId(id as string),
+    enabled: Boolean(id),
+  });
+}
+
 export function useTypeProducts(params: ListParams) {
   return useQuery({
     queryKey: typeProductKeys.list(params),

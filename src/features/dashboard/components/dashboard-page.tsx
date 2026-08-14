@@ -28,9 +28,10 @@ export function DashboardPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Dasbor"
         description={
-          name ? `Selamat datang kembali, ${name}.` : "Ringkasan aktivitas toko."
+          name
+            ? `Selamat datang kembali, ${name}.`
+            : "Ringkasan aktivitas toko."
         }
       />
 

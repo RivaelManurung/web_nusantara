@@ -17,6 +17,15 @@ export const cashierKeys = {
   detail: (id: string) => [KEY, "detail", id] as const,
 };
 
+/** One record, for the edit screen. */
+export function useCashier(id: string | null) {
+  return useQuery({
+    queryKey: cashierKeys.detail(id ?? ""),
+    queryFn: () => cashierApi.byId(id as string),
+    enabled: Boolean(id),
+  });
+}
+
 export function useCashiers(params: ListParams) {
   return useQuery({
     queryKey: cashierKeys.list(params),
@@ -99,7 +108,8 @@ export function useDeleteCashier() {
       toast.success("Kasir berhasil dihapus.");
       await invalidate();
     },
-    onError: (error) => toast.error(messageFor(error, "Gagal menghapus kasir.")),
+    onError: (error) =>
+      toast.error(messageFor(error, "Gagal menghapus kasir.")),
   });
 }
 

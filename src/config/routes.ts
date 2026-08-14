@@ -58,9 +58,34 @@ export const ROUTE_ROLES: Partial<Record<string, Role[]>> = {
   [ROUTES.unassignedShop]: ["admin"],
 };
 
+/**
+ * The role requirement that governs `path`, inherited from its nearest parent.
+ *
+ * Exact-match lookup was enough while every route was a leaf. Child routes such
+ * as /products/new would find no entry and fall through to "no requirement" --
+ * meaning a cashier could open the product create form even though /products
+ * itself is restricted. The longest matching prefix wins, so a child is at
+ * least as protected as its parent.
+ */
+function requirementFor(path: string): Role[] | undefined {
+  let matched: Role[] | undefined;
+  let matchedLength = -1;
+
+  for (const [route, roles] of Object.entries(ROUTE_ROLES)) {
+    if (!roles) continue;
+    const isSelfOrChild = path === route || path.startsWith(`${route}/`);
+    if (isSelfOrChild && route.length > matchedLength) {
+      matched = roles;
+      matchedLength = route.length;
+    }
+  }
+
+  return matched;
+}
+
 /** Whether `role` may open `path`. */
 export function canAccess(path: string, role: Role | undefined): boolean {
-  const required = ROUTE_ROLES[path];
+  const required = requirementFor(path);
   if (!required) return true;
   if (!role) return false;
   return required.includes(role);

@@ -17,6 +17,15 @@ export const voucherKeys = {
   detail: (id: string) => [KEY, "detail", id] as const,
 };
 
+/** One record, for the edit screen. */
+export function useVoucher(id: string | null) {
+  return useQuery({
+    queryKey: voucherKeys.detail(id ?? ""),
+    queryFn: () => voucherApi.byId(id as string),
+    enabled: Boolean(id),
+  });
+}
+
 export function useVouchers(params: ListParams) {
   return useQuery({
     queryKey: voucherKeys.list(params),
@@ -70,7 +79,8 @@ export function useSetVoucherStatus() {
       toast.success("Status voucher diperbarui.");
       await invalidate();
     },
-    onError: (error) => toast.error(messageFor(error, "Gagal mengubah status.")),
+    onError: (error) =>
+      toast.error(messageFor(error, "Gagal mengubah status.")),
   });
 }
 

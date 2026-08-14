@@ -84,7 +84,8 @@ export function useSetEventStatus() {
       toast.success("Status event diperbarui.");
       await invalidate();
     },
-    onError: (error) => toast.error(messageFor(error, "Gagal mengubah status.")),
+    onError: (error) =>
+      toast.error(messageFor(error, "Gagal mengubah status.")),
   });
 }
 
@@ -97,7 +98,8 @@ export function useDeleteEvent() {
       toast.success("Event berhasil dihapus.");
       await invalidate();
     },
-    onError: (error) => toast.error(messageFor(error, "Gagal menghapus event.")),
+    onError: (error) =>
+      toast.error(messageFor(error, "Gagal menghapus event.")),
   });
 }
 

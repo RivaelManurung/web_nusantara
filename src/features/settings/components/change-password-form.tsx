@@ -3,6 +3,8 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
+
+import { useInvalidSubmit } from "@/hooks/use-invalid-submit";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -38,6 +40,8 @@ const EMPTY: FormValues = {
 export function ChangePasswordForm() {
   const mutation = useChangePassword();
 
+  const onInvalid = useInvalidSubmit();
+
   const {
     register,
     handleSubmit,
@@ -61,7 +65,7 @@ export function ChangePasswordForm() {
 
   return (
     <form
-      onSubmit={handleSubmit(onSubmit)}
+      onSubmit={handleSubmit(onSubmit, onInvalid)}
       className="max-w-md space-y-4"
       noValidate
     >
@@ -104,7 +108,9 @@ export function ChangePasswordForm() {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="confirmation-password">Konfirmasi kata sandi baru</Label>
+        <Label htmlFor="confirmation-password">
+          Konfirmasi kata sandi baru
+        </Label>
         <Input
           id="confirmation-password"
           type="password"

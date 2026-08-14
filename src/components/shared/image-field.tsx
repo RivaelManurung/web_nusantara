@@ -1,11 +1,10 @@
 "use client";
 
-import { ImagePlus, X } from "lucide-react";
+import { ImagePlus, Upload, X } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 interface ImageFieldProps {
@@ -88,14 +87,30 @@ export function ImageField({
         </div>
 
         <div className="min-w-0 flex-1 space-y-2">
-          <Input
+          {/* The native control renders as "Choose File / No file chosen",
+              which cannot be styled and reads differently in every browser.
+              A label styled as a button drives the same hidden input. */}
+          <input
             id={id}
             type="file"
             accept="image/png,image/jpeg,image/webp"
+            className="sr-only"
             aria-invalid={Boolean(message)}
             aria-describedby={message ? `${id}-error` : undefined}
             onChange={(event) => handleSelect(event.target.files?.[0] ?? null)}
           />
+          <label
+            htmlFor={id}
+            className="border-input bg-background hover:bg-accent focus-within:ring-ring inline-flex cursor-pointer items-center gap-2 rounded-md border px-3 py-2 text-sm font-medium transition-colors"
+          >
+            <Upload className="size-4" aria-hidden />
+            {value ? "Ganti gambar" : "Pilih gambar"}
+          </label>
+          {value ? (
+            <span className="text-muted-foreground ml-2 text-sm">
+              {value.name}
+            </span>
+          ) : null}
           <p className="text-muted-foreground text-xs">
             PNG, JPG, atau WebP. Maksimal {maxSizeMb} MB.
           </p>

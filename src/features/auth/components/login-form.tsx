@@ -4,6 +4,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
+
+import { useInvalidSubmit } from "@/hooks/use-invalid-submit";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -34,6 +36,8 @@ export function LoginForm() {
   // Rate limiting is the one failure worth pinning above the form: it tells the
   // user to wait, which a toast that disappears after four seconds does not.
   const [lockoutMessage, setLockoutMessage] = useState<string | null>(null);
+
+  const onInvalid = useInvalidSubmit();
 
   const {
     register,
@@ -76,7 +80,11 @@ export function LoginForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
+    <form
+      onSubmit={handleSubmit(onSubmit, onInvalid)}
+      className="space-y-4"
+      noValidate
+    >
       {lockoutMessage ? (
         <Alert variant="destructive">
           <AlertDescription>{lockoutMessage}</AlertDescription>

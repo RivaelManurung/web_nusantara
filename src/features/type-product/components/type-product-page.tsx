@@ -1,6 +1,7 @@
 "use client";
 
 import { Plus } from "lucide-react";
+import Link from "next/link";
 import { useCallback, useState } from "react";
 
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
@@ -10,6 +11,7 @@ import { Pagination } from "@/components/shared/pagination";
 import { SearchInput } from "@/components/shared/search-input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { ROUTES } from "@/config/routes";
 import { useListParams } from "@/hooks/use-list-params";
 import { ApiError } from "@/lib/api/errors";
 
@@ -19,7 +21,6 @@ import {
   useTypeProducts,
 } from "../queries";
 import type { TypeProduct } from "../types";
-import { TypeProductFormDialog } from "./type-product-form-dialog";
 import { useTypeProductColumns } from "./type-product-table";
 
 /**
@@ -32,17 +33,10 @@ export function TypeProductPage() {
   const { params, setPage, setSearch } = useListParams();
   const { data, isLoading, isFetching, error } = useTypeProducts(params);
 
-  const [formOpen, setFormOpen] = useState(false);
-  const [editing, setEditing] = useState<TypeProduct | null>(null);
   const [pendingDelete, setPendingDelete] = useState<TypeProduct | null>(null);
 
   const statusMutation = useSetTypeProductStatus();
   const deleteMutation = useDeleteTypeProduct();
-
-  const handleEdit = useCallback((row: TypeProduct) => {
-    setEditing(row);
-    setFormOpen(true);
-  }, []);
 
   const handleToggleStatus = useCallback(
     (row: TypeProduct) =>
@@ -51,7 +45,7 @@ export function TypeProductPage() {
   );
 
   const columns = useTypeProductColumns({
-    onEdit: handleEdit,
+    editHref: (row) => `${ROUTES.productTypes}/${row.id}/edit`,
     onDelete: setPendingDelete,
     onToggleStatus: handleToggleStatus,
     isTogglingId: statusMutation.isPending
@@ -62,15 +56,9 @@ export function TypeProductPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Tipe Produk"
         description="Kelompok kategori yang dipakai katalog produk."
         actions={
-          <Button
-            onClick={() => {
-              setEditing(null);
-              setFormOpen(true);
-            }}
-          >
+          <Button render={<Link href={`${ROUTES.productTypes}/new`} />}>
             <Plus className="size-4" aria-hidden />
             Tambah Tipe
           </Button>
@@ -112,16 +100,10 @@ export function TypeProductPage() {
         </>
       )}
 
-      <TypeProductFormDialog
-        open={formOpen}
-        onOpenChange={setFormOpen}
-        editing={editing}
-      />
-
       <ConfirmDialog
+        title="Hapus tipe produk?"
         open={Boolean(pendingDelete)}
         onOpenChange={(open) => !open && setPendingDelete(null)}
-        title="Hapus tipe produk?"
         description={`“${pendingDelete?.name}” akan dihapus. Produk yang memakai tipe ini bisa ikut terpengaruh.`}
         confirmLabel="Hapus"
         destructive

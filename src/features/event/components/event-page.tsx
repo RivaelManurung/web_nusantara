@@ -1,6 +1,7 @@
 "use client";
 
 import { Plus } from "lucide-react";
+import Link from "next/link";
 import { useCallback, useState } from "react";
 
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
@@ -10,29 +11,22 @@ import { Pagination } from "@/components/shared/pagination";
 import { SearchInput } from "@/components/shared/search-input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { ROUTES } from "@/config/routes";
 import { useListParams } from "@/hooks/use-list-params";
 import { ApiError } from "@/lib/api/errors";
 
 import { useDeleteEvent, useEvents, useSetEventStatus } from "../queries";
 import type { AppEvent } from "../types";
-import { EventFormDialog } from "./event-form-dialog";
 import { useEventColumns } from "./event-table";
 
 export function EventPage() {
   const { params, setPage, setSearch } = useListParams();
   const { data, isLoading, isFetching, error } = useEvents(params);
 
-  const [formOpen, setFormOpen] = useState(false);
-  const [editing, setEditing] = useState<AppEvent | null>(null);
   const [pendingDelete, setPendingDelete] = useState<AppEvent | null>(null);
 
   const statusMutation = useSetEventStatus();
   const deleteMutation = useDeleteEvent();
-
-  const handleEdit = useCallback((row: AppEvent) => {
-    setEditing(row);
-    setFormOpen(true);
-  }, []);
 
   const handleToggleStatus = useCallback(
     (row: AppEvent) =>
@@ -41,24 +35,20 @@ export function EventPage() {
   );
 
   const columns = useEventColumns({
-    onEdit: handleEdit,
+    editHref: (row) => `${ROUTES.events}/${row.id}/edit`,
     onDelete: setPendingDelete,
     onToggleStatus: handleToggleStatus,
-    isTogglingId: statusMutation.isPending ? statusMutation.variables?.id : null,
+    isTogglingId: statusMutation.isPending
+      ? statusMutation.variables?.id
+      : null,
   });
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Event"
         description="Promo diskon per produk dan paket bundle berhadiah."
         actions={
-          <Button
-            onClick={() => {
-              setEditing(null);
-              setFormOpen(true);
-            }}
-          >
+          <Button render={<Link href={`${ROUTES.events}/new`} />}>
             <Plus className="size-4" aria-hidden />
             Tambah event
           </Button>
@@ -100,16 +90,10 @@ export function EventPage() {
         </>
       )}
 
-      <EventFormDialog
-        open={formOpen}
-        onOpenChange={setFormOpen}
-        editing={editing}
-      />
-
       <ConfirmDialog
+        title="Hapus event?"
         open={Boolean(pendingDelete)}
         onOpenChange={(open) => !open && setPendingDelete(null)}
-        title="Hapus event?"
         description={`“${pendingDelete?.name}” akan dihapus beserta daftar produknya.`}
         confirmLabel="Hapus"
         destructive

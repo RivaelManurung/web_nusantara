@@ -1,6 +1,13 @@
 "use client";
 
-import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
+import {
+  Cell,
+  Legend,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+} from "recharts";
 
 import { ChartCard, TOOLTIP_STYLE } from "./chart-card";
 

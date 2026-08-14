@@ -4,7 +4,6 @@ import { PageHeader } from "@/components/shared/page-header";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface NotBuiltYetProps {
-  title: string;
   description: string;
 }
 
@@ -16,10 +15,10 @@ interface NotBuiltYetProps {
  * honest empty state is better than a screen that looks like the wrong feature,
  * and better than a link that 404s.
  */
-export function NotBuiltYet({ title, description }: NotBuiltYetProps) {
+export function NotBuiltYet({ description }: NotBuiltYetProps) {
   return (
     <div className="space-y-6">
-      <PageHeader title={title} description={description} />
+      <PageHeader description={description} />
 
       <Alert>
         <Construction className="size-4" aria-hidden />
