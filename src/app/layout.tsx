@@ -29,10 +29,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="id" suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+    // The font variables belong on <html>, not <body>: globals.css sets
+    // `font-family` on the html element, and a custom property declared on a
+    // child is invisible to its parent. On <body> the rule resolved to nothing
+    // and the browser fell back to its default serif.
+    <html
+      lang="id"
+      suppressHydrationWarning
+      className={`${geistSans.variable} ${geistMono.variable}`}
+    >
+      <body className="antialiased">
         <ThemeProvider>
           <QueryProvider>
             <SessionProvider>
