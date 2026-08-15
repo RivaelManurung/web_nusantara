@@ -2,6 +2,7 @@
 
 import { ExternalLink, Images, Info, Map, MapPin } from "lucide-react";
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import { useEffect } from "react";
 
 import { DataTable } from "@/components/shared/data-table";
@@ -11,12 +12,17 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { env } from "@/config/env";
 import { useShopContextStore } from "@/features/shop-context/store";
 import { ApiError } from "@/lib/api/errors";
 
 import { useAssignedShops, useShopDetails, useShopProducts } from "../queries";
 import { useShopProductColumns } from "./shop-profile-table";
+
+/** Browser-only: Leaflet reads `window` as its module initialises. */
+const LocationMap = dynamic(() => import("@/components/shared/location-map"), {
+  ssr: false,
+  loading: () => <Skeleton className="h-40 w-full" />,
+});
 
 export function ShopProfilePage() {
   const {
@@ -196,15 +202,17 @@ export function ShopProfilePage() {
 /**
  * Location preview.
  *
- * A Maps key is optional in this app, so the static-map image is a bonus rather
- * than the mechanism: the coordinates and the link to Google Maps work either
- * way.
+ * Previously a Google static-map image guarded by `env.googleMapsApiKey`, which
+ * is empty in this project -- so every cashier saw "pratinjau peta tidak
+ * tersedia" instead of a map. Leaflet on OpenStreetMap tiles needs no key, so
+ * the empty-key branch is gone rather than merely hidden.
+ *
+ * Read-only: no onChange, so the pin cannot be dragged. A cashier looking at
+ * their shop's profile has no business moving it.
  */
 function LocationCard({ lat, lng }: { lat: number; lng: number }) {
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
-  const staticMapUrl = env.googleMapsApiKey
-    ? `https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=15&size=600x300&markers=color:red%7C${lat},${lng}&key=${env.googleMapsApiKey}`
-    : null;
+  const hasCoordinates = Number.isFinite(lat) && Number.isFinite(lng);
 
   return (
     <Card>
@@ -215,25 +223,16 @@ function LocationCard({ lat, lng }: { lat: number; lng: number }) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        {staticMapUrl ? (
-          <a
-            href={mapsUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bg-muted relative block h-40 overflow-hidden rounded-md border"
-          >
-            <Image
-              src={staticMapUrl}
-              alt={`Peta lokasi toko pada ${lat}, ${lng}`}
-              fill
-              sizes="320px"
-              className="object-cover"
-              unoptimized
-            />
-          </a>
+        {hasCoordinates ? (
+          <LocationMap
+            lat={lat}
+            lng={lng}
+            className="h-40"
+            label={`Peta lokasi toko pada ${lat}, ${lng}`}
+          />
         ) : (
           <p className="text-muted-foreground bg-muted/50 rounded-md border p-4 text-sm">
-            Pratinjau peta tidak tersedia karena kunci Google Maps belum diatur.
+            Koordinat toko ini belum diisi.
           </p>
         )}
 

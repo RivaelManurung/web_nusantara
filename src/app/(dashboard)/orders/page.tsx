@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
-import { NotBuiltYet } from "@/components/shared/not-built-yet";
+import { OrderPage } from "@/features/order/components/order-page";
 
 export const metadata: Metadata = { title: "Pesanan" };
 
 export default function Page() {
-  return <NotBuiltYet description="Daftar pesanan yang masuk ke toko Anda." />;
+  return <OrderPage />;
 }

@@ -142,6 +142,7 @@ export function ShopForm({ editing }: Props) {
     control,
     handleSubmit,
     setError,
+    setValue,
     formState: { errors },
   } = useForm<ShopFormValues>({
     resolver: zodResolver(schema),
@@ -314,6 +315,14 @@ export function ShopForm({ editing }: Props) {
         errors={errors}
         lat={lat}
         lng={lng}
+        onPick={(nextLat, nextLng) => {
+          // shouldValidate so an out-of-range coordinate is caught the moment
+          // the pin lands, not on submit. shouldDirty so the form knows it has
+          // unsaved changes after a drag, exactly as after typing.
+          const options = { shouldValidate: true, shouldDirty: true } as const;
+          setValue("lat", Number(nextLat.toFixed(7)), options);
+          setValue("lng", Number(nextLng.toFixed(7)), options);
+        }}
       />
 
       <ShopRelationsFields

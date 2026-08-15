@@ -1,7 +1,10 @@
 "use client";
 
 import { ExternalLink, MapPin } from "lucide-react";
+import dynamic from "next/dynamic";
 import type { FieldErrors, UseFormRegister } from "react-hook-form";
+
+import { Skeleton } from "@/components/ui/skeleton";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,30 +13,50 @@ import { Textarea } from "@/components/ui/textarea";
 // Type-only import; the dialog owns the schema these fields are registered against.
 import type { ShopFormValues } from "./shop-form";
 
+/**
+ * Leaflet reads `window` while its module initialises, which throws during
+ * Next's server render even from inside a client component. ssr:false is the
+ * supported way to say "this one is browser-only".
+ */
+const LocationMap = dynamic(() => import("@/components/shared/location-map"), {
+  ssr: false,
+  loading: () => <Skeleton className="h-64 w-full" />,
+});
+
 interface Props {
   register: UseFormRegister<ShopFormValues>;
   errors: FieldErrors<ShopFormValues>;
-  /** Live values, used for the "open in maps" shortcut. */
+  /** Live values, used by the map and the "open in maps" shortcut. */
   lat: number;
   lng: number;
+  /** Writes a dragged or clicked position back into the form. */
+  onPick: (lat: number, lng: number) => void;
 }
 
 /**
  * Address and coordinates.
  *
  * The Vue app picked coordinates by dragging a marker on an embedded Google
- * Map, which reverse-geocoded into the address field. That map is not ported:
- * the Maps key is optional here (`env.googleMapsApiKey` may be empty), and a
- * form that silently breaks without a key is worse than one that always works.
- * The same three values -- address, lat, lng -- are captured as validated
- * inputs instead, and a link opens the coordinates in Google Maps so they can
- * be checked.
+ * Map. That was not ported at first because the Maps key is optional here and
+ * empty in practice, and a form that silently breaks without a key is worse
+ * than one that always works.
  *
- * TODO: drop an interactive picker in here once a maps key is guaranteed. It
- * only needs to write back into `full_address`, `lat`, and `lng`; nothing else
- * in this feature depends on how those three values are obtained.
+ * The picker is back, on OpenStreetMap tiles through Leaflet, which needs no
+ * key and no billing account -- so the "what if the key is missing" branch this
+ * file used to carry is gone entirely rather than merely hidden.
+ *
+ * The numeric inputs stay, and are not decoration. A draggable pin cannot be
+ * operated without a pointer, so the fields are the keyboard and screen-reader
+ * path to the same two values; the map is an enhancement over them. They also
+ * remain the way to paste coordinates copied from somewhere else.
  */
-export function ShopLocationFields({ register, errors, lat, lng }: Props) {
+export function ShopLocationFields({
+  register,
+  errors,
+  lat,
+  lng,
+  onPick,
+}: Props) {
   const hasCoordinates = Number.isFinite(lat) && Number.isFinite(lng);
 
   return (
@@ -61,6 +84,21 @@ export function ShopLocationFields({ register, errors, lat, lng }: Props) {
           </p>
         ) : null}
       </div>
+
+      {hasCoordinates ? (
+        <div className="space-y-2">
+          <LocationMap
+            lat={lat}
+            lng={lng}
+            onChange={onPick}
+            label={`Peta lokasi toko pada ${lat}, ${lng}. Geser penanda atau klik peta untuk memindahkannya.`}
+          />
+          <p className="text-muted-foreground text-xs">
+            Klik peta atau geser penanda untuk menentukan titik. Koordinat di
+            bawah ikut menyesuaikan, dan bisa juga diisi langsung.
+          </p>
+        </div>
+      ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">

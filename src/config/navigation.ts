@@ -1,6 +1,7 @@
 import {
   BadgePercent,
   Banknote,
+  BellRing,
   CalendarRange,
   ClipboardList,
   Images,
@@ -13,6 +14,7 @@ import {
   Store,
   Tags,
   TrendingUp,
+  UserRound,
   UsersRound,
   Warehouse,
   type LucideIcon,
@@ -58,6 +60,7 @@ export const NAV_GROUPS: NavGroup[] = [
         href: ROUTES.customerReviews,
         icon: MessageSquareText,
       },
+      { label: "Pelanggan", href: ROUTES.customers, icon: UserRound },
       { label: "Pesanan", href: ROUTES.orders, icon: ClipboardList },
       { label: "Keuangan", href: ROUTES.finance, icon: Banknote },
     ],
@@ -68,6 +71,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Banner", href: ROUTES.banners, icon: Images },
       { label: "Event", href: ROUTES.events, icon: CalendarRange },
       { label: "Voucher", href: ROUTES.vouchers, icon: BadgePercent },
+      { label: "Notifikasi", href: ROUTES.notifications, icon: BellRing },
     ],
   },
   {
